@@ -1,0 +1,301 @@
+<div class="enroll-management-container" [formGroup]="enrollmentForm">
+  <!-- Header Section -->
+  <div class="management-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="header-title">
+          <i class="bi bi-person-plus me-2"></i>
+          Enroll Students
+        </h1>
+        <p class="header-subtitle" *ngIf="test">
+          Managing enrollments for: <strong>{{ test.title }}</strong> | ID: {{ testId }}
+        </p>
+      </div>
+      
+      <!-- Quick Stats -->
+      <div class="header-stats">
+        <div class="stat-item">
+          <div class="stat-number text-primary">{{ availableCount + enrolledCount }}</div>
+          <div class="stat-label">Total Students</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-success">{{ enrolledCount }}</div>
+          <div class="stat-label">Enrolled</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-warning">{{ availableCount }}</div>
+          <div class="stat-label">Available</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-info">{{ selectedCount }}</div>
+          <div class="stat-label">Selected</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <!-- Search & Filters -->
+      <div class="filters-section">
+        <!-- Search Box -->
+        <div class="search-container">
+          <div class="input-group search-input-group">
+            <span class="input-group-text">
+              <i class="bi bi-search"></i>
+            </span>
+            <input type="text" 
+                   class="form-control" 
+                   placeholder="Search students by name, email, or ID..." 
+                   formControlName="searchTerm"
+                   (input)="filterStudents()">
+            <button *ngIf="enrollmentForm.get('searchTerm')?.value" 
+                    class="btn btn-outline-secondary btn-clear" 
+                    type="button" 
+                    (click)="enrollmentForm.get('searchTerm')?.setValue(''); filterStudents()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Department Filter -->
+        <div class="filter-group">
+          <label class="filter-label">Filter by Department:</label>
+          <div class="department-filter-buttons">
+            <button type="button" 
+                    class="btn btn-filter-department" 
+                    [class.active]="enrollmentForm.get('department')?.value === 'all'"
+                    (click)="enrollmentForm.get('department')?.setValue('all'); filterStudents()">
+              <span class="filter-dot all"></span>
+              All
+              <span class="filter-count">{{ availableCount + enrolledCount }}</span>
+            </button>
+            
+            <button *ngFor="let dept of departments" 
+                    type="button" 
+                    class="btn btn-filter-department" 
+                    [class.active]="enrollmentForm.get('department')?.value === dept"
+                    (click)="enrollmentForm.get('department')?.setValue(dept); filterStudents()">
+              <span class="filter-dot" [ngClass]="getDepartmentClass(dept)"></span>
+              {{ dept }}
+              <span class="filter-count">{{ getDepartmentCount(dept) }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <div class="primary-actions">
+          <button class="btn btn-warning" 
+                  (click)="enrollSelectedStudents()"
+                  [disabled]="selectedCount === 0 || isSubmitting">
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            Enroll Selected ({{ selectedCount }})
+          </button>
+          
+          <button class="btn btn-outline-secondary" (click)="onBack()">
+            <i class="bi bi-arrow-left me-1"></i> Back to Tests
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="loading-text">Loading enrollment data...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage && !isLoading" class="error-container">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <div>
+          <h6 class="alert-heading mb-1">Unable to Load Enrollment Data</h6>
+          <p class="mb-0">{{ errorMessage }}</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage && !isLoading" class="success-container">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <div>
+          <h6 class="alert-heading mb-1">Success</h6>
+          <p class="mb-0">{{ successMessage }}</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="main-content">
+    <div class="enrollment-panels">
+      <!-- Available Students Panel -->
+      <div class="enrollment-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="bi bi-people me-2"></i>
+            Available Students
+            <span class="panel-badge">{{ availableCount }}</span>
+          </div>
+          <div class="panel-actions">
+            <div class="form-check select-all-checkbox">
+              <input class="form-check-input" type="checkbox" [checked]="selectAll"
+                     (change)="selectAll = !selectAll; toggleSelectAll()" 
+                     [disabled]="availableStudents.length === 0">
+              <label class="form-check-label">
+                Select All
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="panel-body">
+          <div class="students-list">
+            <div *ngFor="let student of availableStudents" 
+                 class="student-item" 
+                 [class.selected]="selectedStudents.has(student.id)">
+              <div class="student-checkbox">
+                <input class="form-check-input" type="checkbox" 
+                       [checked]="selectedStudents.has(student.id)"
+                       (change)="toggleStudentSelection(student.id)">
+              </div>
+              
+              <div class="student-info">
+                <h6 class="student-name">{{ student.name }}</h6>
+                <div class="student-details">
+                  <div class="detail-item">
+                    <i class="bi bi-envelope"></i>
+                    <span>{{ student.email }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="bi bi-person-badge"></i>
+                    <span>{{ student.studentId }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="bi bi-building"></i>
+                    <span>{{ student.department }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="student-actions">
+                <button class="btn btn-success btn-sm" 
+                        (click)="enrollStudent(student)" 
+                        [disabled]="isSubmitting"
+                        title="Enroll Student">
+                  <i class="bi bi-person-plus"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Empty State -->
+            <div *ngIf="availableStudents.length === 0" class="empty-panel-state">
+              <div class="empty-icon">
+                <i class="bi bi-people"></i>
+              </div>
+              <h5>No Available Students</h5>
+              <p class="text-muted">All students are enrolled or no students match your filters.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enrolled Students Panel -->
+      <div class="enrollment-panel enrolled-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="bi bi-check-circle me-2"></i>
+            Enrolled Students
+            <span class="panel-badge">{{ enrolledCount }}</span>
+          </div>
+          <div class="panel-actions">
+            <button class="btn btn-light btn-sm" (click)="exportEnrollments()">
+              <i class="bi bi-download me-1"></i> Export
+            </button>
+            <button class="btn btn-outline-light btn-sm" (click)="unenrollAllStudents()"
+                    [disabled]="enrolledCount === 0 || isSubmitting">
+              Unenroll All
+            </button>
+          </div>
+        </div>
+        
+        <div class="panel-body">
+          <!-- Notification Section -->
+          <div class="notification-section" formGroupName="notificationGroup">
+            <h6 class="notification-title">
+              <i class="bi bi-bell me-2"></i>Send Notifications
+            </h6>
+            <div class="notification-form">
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" formControlName="sendNotification">
+                <label class="form-check-label">Send enrollment notifications</label>
+              </div>
+              <textarea class="form-control form-control-sm mb-2" rows="2" 
+                        formControlName="notificationMessage"
+                        placeholder="Custom notification message..."></textarea>
+              <button class="btn btn-primary btn-sm" (click)="sendNotifications()"
+                      [disabled]="enrolledCount === 0 || isSubmitting">
+                <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                Send to {{ enrolledCount }} Students
+              </button>
+            </div>
+          </div>
+          
+          <!-- Enrolled Students List -->
+          <div class="enrolled-list">
+            <div *ngFor="let student of enrolledStudents" class="enrolled-item">
+              <div class="student-info">
+                <h6 class="student-name">{{ student.name }}</h6>
+                <div class="student-details">
+                  <div class="detail-item">
+                    <i class="bi bi-envelope"></i>
+                    <span>{{ student.email }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="bi bi-person-badge"></i>
+                    <span>{{ student.studentId }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <i class="bi bi-building"></i>
+                    <span>{{ student.department }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="student-actions">
+                <button class="btn btn-outline-danger btn-sm" 
+                        (click)="unenrollStudent(student)"
+                        [disabled]="isSubmitting"
+                        title="Unenroll Student">
+                  <i class="bi bi-person-dash"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Empty State -->
+            <div *ngIf="enrolledStudents.length === 0" class="empty-panel-state">
+              <div class="empty-icon">
+                <i class="bi bi-person-check"></i>
+              </div>
+              <h5>No Enrolled Students</h5>
+              <p class="text-muted">Select students from the left panel to enroll them.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

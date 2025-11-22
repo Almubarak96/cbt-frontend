@@ -1,0 +1,376 @@
+@import 'variables';
+
+.calculator {
+  max-width: 100%;
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: $shadow-md;
+  font-family: $font-family-base;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+// Display Styles
+.display {
+  margin-bottom: 1rem;
+  
+  .display-input {
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    color: $dark-color;
+    font-size: 1.25rem;
+    font-weight: $font-weight-semibold;
+    text-align: right;
+    padding: 0 1rem;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+      box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.1);
+    }
+    
+    &::placeholder {
+      color: #6c757d;
+    }
+  }
+}
+
+// Mode Toggle
+.mode-toggle {
+  margin-bottom: 1rem;
+  text-align: center;
+  
+  .mode-btn {
+    background: white;
+    border: 2px solid $primary-color;
+    color: $primary-color;
+    border-radius: 20px;
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    
+    &:hover {
+      background: $primary-color;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: $shadow-sm;
+    }
+    
+    &.active {
+      background: $primary-gradient;
+      color: white;
+      border-color: $primary-dark;
+    }
+    
+    i {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Keypad Styles
+.keypad {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+// Scientific Functions
+.scientific-functions {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.3rem;
+  margin-bottom: 0.3rem;
+  
+  .sci-btn {
+    background: white;
+    border: 1px solid;
+    border-radius: 6px;
+    padding: 0.5rem 0.3rem;
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: $font-weight-semibold;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 35px;
+    
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: $shadow-sm;
+    }
+    
+    // Different colors for different function types
+    &.sci-trig {
+      border-color: #6f42c1;
+      color: #6f42c1;
+      
+      &:hover {
+        background: #6f42c1;
+        color: white;
+      }
+    }
+    
+    &.sci-func {
+      border-color: #fd7e14;
+      color: #fd7e14;
+      
+      &:hover {
+        background: #fd7e14;
+        color: white;
+      }
+    }
+    
+    &.sci-math {
+      border-color: #20c997;
+      color: #20c997;
+      
+      &:hover {
+        background: #20c997;
+        color: white;
+      }
+    }
+    
+    &.sci-const {
+      border-color: #e83e8c;
+      color: #e83e8c;
+      
+      &:hover {
+        background: #e83e8c;
+        color: white;
+      }
+    }
+  }
+}
+
+// Basic Keypad
+.basic-keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  
+  .num-btn {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.6rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: $font-weight-semibold;
+    color: $dark-color;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    
+    &:hover {
+      border-color: $primary-color;
+      background: rgba($primary-color, 0.05);
+      transform: translateY(-1px);
+      box-shadow: $shadow-sm;
+    }
+    
+    &.btn-zero {
+      grid-column: span 2;
+    }
+    
+    &.btn-decimal {
+      font-weight: $font-weight-bold;
+    }
+  }
+  
+  .func-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: $font-weight-semibold;
+    color: white;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: $shadow-sm;
+    }
+    
+    // Operator buttons
+    &.btn-operator {
+      background: linear-gradient(45deg, #0d6efd, #0a58ca);
+      
+      &:hover {
+        background: linear-gradient(45deg, #0a58ca, #084298);
+      }
+      
+      &.btn-plus {
+        grid-row: span 2;
+        min-height: 90px;
+      }
+    }
+    
+    // Clear button
+    &.btn-clear {
+      background: linear-gradient(45deg, #dc3545, #c82333);
+      
+      &:hover {
+        background: linear-gradient(45deg, #c82333, #a71e2a);
+      }
+    }
+    
+    // Backspace button
+    &.btn-backspace {
+      background: linear-gradient(45deg, #6c757d, #5a6268);
+      
+      &:hover {
+        background: linear-gradient(45deg, #5a6268, #484e53);
+      }
+    }
+    
+    // Bracket buttons
+    &.btn-bracket {
+      background: linear-gradient(45deg, #20c997, #17a2b8);
+      
+      &:hover {
+        background: linear-gradient(45deg, #17a2b8, #138496);
+      }
+    }
+    
+    // Equals button
+    &.btn-equals {
+      background: linear-gradient(45deg, #198754, #20c997);
+      
+      &:hover {
+        background: linear-gradient(45deg, #20c997, #138a5e);
+      }
+    }
+    
+    i {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .calculator {
+    padding: 0.75rem;
+    border-radius: 10px;
+    max-height: 85vh;
+  }
+  
+  .display .display-input {
+    height: 45px;
+    font-size: 1.1rem;
+    padding: 0 0.75rem;
+  }
+  
+  .scientific-functions {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.25rem;
+    
+    .sci-btn {
+      padding: 0.4rem 0.25rem;
+      font-size: 0.65rem;
+      min-height: 32px;
+    }
+  }
+  
+  .basic-keypad {
+    gap: 0.4rem;
+    
+    .num-btn,
+    .func-btn {
+      padding: 0.5rem;
+      font-size: 0.85rem;
+      min-height: 35px;
+    }
+    
+    .func-btn.btn-plus {
+      min-height: 80px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .scientific-functions {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .basic-keypad {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.3rem;
+    
+    .num-btn,
+    .func-btn {
+      padding: 0.4rem;
+      font-size: 0.8rem;
+      min-height: 32px;
+    }
+    
+    .func-btn.btn-plus {
+      min-height: 74px;
+    }
+  }
+}
+
+// Animation for button presses
+@keyframes buttonPress {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.num-btn:active,
+.func-btn:active,
+.sci-btn:active {
+  animation: buttonPress 0.1s ease;
+}
+
+// Compact mode for very small screens
+@media (max-height: 600px) {
+  .calculator {
+    padding: 0.5rem;
+    max-height: 80vh;
+  }
+  
+  .display .display-input {
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .scientific-functions .sci-btn {
+    min-height: 28px;
+    font-size: 0.6rem;
+    padding: 0.3rem 0.2rem;
+  }
+  
+  .basic-keypad {
+    .num-btn,
+    .func-btn {
+      min-height: 30px;
+      font-size: 0.75rem;
+      padding: 0.3rem;
+    }
+    
+    .func-btn.btn-plus {
+      min-height: 68px;
+    }
+  }
+}

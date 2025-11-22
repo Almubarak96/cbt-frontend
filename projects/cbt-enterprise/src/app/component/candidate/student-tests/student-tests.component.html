@@ -1,0 +1,33 @@
+    <div class="container mt-4">
+      <h2>Available Exams</h2>
+      
+      <div *ngIf="isLoading" class="text-center">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3" *ngFor="let test of availableTests">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">{{ test.title }}</h5>
+              <p class="card-text">{{ test.description }}</p>
+              <p><strong>Duration:</strong> {{ test.durationMinutes }} minutes</p>
+              <p><strong>Questions:</strong> {{ test.numberOfQuestions }}</p>
+              
+              <button 
+                class="btn btn-primary" 
+                (click)="startExam(test.id)"
+                [disabled]="!canTakeExam(test)">
+                Start Exam
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

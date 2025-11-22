@@ -1,0 +1,39 @@
+/* instructions-modal.component.scss */
+.modal {
+  &.show {
+    display: block;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.modal-dialog-left {
+  margin: 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  
+  .modal-content {
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+}
+
+.instructions-content {
+  max-height: 60vh;
+  overflow-y: auto;
+  
+  .instruction-item {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: #e9ecef;
+    }
+  }
+}
+
+.modal-backdrop {
+  opacity: 0.5;
+}

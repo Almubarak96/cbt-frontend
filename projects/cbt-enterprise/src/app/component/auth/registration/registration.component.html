@@ -1,0 +1,246 @@
+<div class="auth-container">
+  <div class="auth-card registration-card"> <!-- Added registration-card class -->
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
+        
+        <!-- Header Section -->
+        <div class="auth-header">
+          <div class="auth-icon">
+            <i class="bi bi-person-plus"></i>
+          </div>
+          <h2 class="auth-title">Create Account</h2>
+          <p class="auth-subtitle">Join CBT Enterprise and start your journey</p>
+        </div>
+
+        <!-- Success Message -->
+        <div *ngIf="message" class="alert alert-success" role="alert">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          {{ message }}
+        </div>
+
+        <!-- Error Alert -->
+        <div *ngIf="error" class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {{ error }}
+        </div>
+
+        <!-- Personal Information Section -->
+        <div class="form-section">
+          <h5 class="section-title">
+            <i class="bi bi-person-vcard me-2"></i>
+            Personal Information
+          </h5>
+          
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label required">First Name</label>
+              <input type="text" 
+                     class="form-control" 
+                     [class.is-invalid]="isFieldInvalid('firstName')"
+                     formControlName="firstName" 
+                     placeholder="Enter first name">
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('firstName')">
+                {{ getFieldError('firstName') }}
+              </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Middle Name</label>
+              <input type="text" 
+                     class="form-control" 
+                     formControlName="middleName" 
+                     placeholder="Enter middle name">
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <label class="form-label required">Last Name</label>
+              <input type="text" 
+                     class="form-control" 
+                     [class.is-invalid]="isFieldInvalid('lastName')"
+                     formControlName="lastName" 
+                     placeholder="Enter last name">
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('lastName')">
+                {{ getFieldError('lastName') }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Information Section -->
+        <div class="form-section">
+          <h5 class="section-title">
+            <i class="bi bi-person-circle me-2"></i>
+            Account Information
+          </h5>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label required">Email Address</label>
+              <input type="email" 
+                     class="form-control" 
+                     [class.is-invalid]="isFieldInvalid('email')"
+                     formControlName="email" 
+                     placeholder="Enter email address">
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+                {{ getFieldError('email') }}
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label required">Username</label>
+              <input type="text" 
+                     class="form-control" 
+                     [class.is-invalid]="isFieldInvalid('username')"
+                     formControlName="username" 
+                     placeholder="Choose username">
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('username')">
+                {{ getFieldError('username') }}
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label required">Password</label>
+              <input type="password" 
+                     class="form-control" 
+                     [class.is-invalid]="isFieldInvalid('password')"
+                     formControlName="password" 
+                     placeholder="Create password">
+              
+              <!-- Password Strength Indicator -->
+              <div *ngIf="form.get('password')?.value && !isFieldInvalid('password')" 
+                   class="password-strength mt-2">
+                <div class="strength-bar">
+                  <div class="strength-fill" [ngClass]="getPasswordStrengthClass()"></div>
+                </div>
+                <small class="strength-text" [ngClass]="getPasswordStrengthClass()">
+                  Strength: {{ getPasswordStrengthText() }}
+                </small>
+              </div>
+              
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('password')">
+                {{ getFieldError('password') }}
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label required">Confirm Password</label>
+              <input type="password" 
+                     class="form-control" 
+                     [class.is-invalid]="isFieldInvalid('confirmPassword') || hasFormError('mismatch')"
+                     formControlName="confirmPassword" 
+                     placeholder="Confirm password">
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('confirmPassword') || hasFormError('mismatch')">
+                <div *ngIf="isFieldInvalid('confirmPassword')">
+                  {{ getFieldError('confirmPassword') }}
+                </div>
+                <div *ngIf="hasFormError('mismatch')">
+                  Passwords do not match
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Information Section -->
+        <div class="form-section">
+          <h5 class="section-title">
+            <i class="bi bi-building me-2"></i>
+            Additional Information
+          </h5>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label required">Role</label>
+              <select class="form-select" 
+                      [class.is-invalid]="isFieldInvalid('role')"
+                      formControlName="role">
+                <option value="">Select Role</option>
+                <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('role')">
+                {{ getFieldError('role') }}
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label required">Department</label>
+              <select class="form-select" 
+                      [class.is-invalid]="isFieldInvalid('department')"
+                      formControlName="department">
+                <option value="">Select Department</option>
+                <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('department')">
+                {{ getFieldError('department') }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Image Section -->
+        <div class="form-section">
+          <h5 class="section-title">
+            <i class="bi bi-camera me-2"></i>
+            Profile Picture (Optional)
+          </h5>
+          
+          <div class="profile-image-upload">
+            <!-- Image Preview -->
+            <div *ngIf="imagePreview" class="image-preview mb-3">
+              <img [src]="imagePreview" alt="Profile preview" class="preview-image">
+              <button type="button" class="btn-remove-image" (click)="removeImage()">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+
+            <!-- File Upload -->
+            <div class="file-upload-area" [class.has-image]="imagePreview">
+              <input type="file" 
+                     #fileInput
+                     (change)="onFileSelected($event)"
+                     accept="image/jpeg,image/png,image/gif"
+                     class="file-input"
+                     hidden>
+              <div class="upload-placeholder" (click)="fileInput.click()">
+                <i class="bi bi-cloud-upload"></i>
+                <span class="upload-text">
+                  {{ imagePreview ? 'Change Image' : 'Click to upload profile picture' }}
+                </span>
+                <small class="text-muted">JPEG, PNG, GIF - Max 2MB</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="auth-actions">
+          <button type="submit" 
+                  class="btn btn-primary" 
+                  [disabled]="form.invalid || loading">
+            <i class="bi" [class.bi-person-check]="!loading" [class.bi-arrow-repeat]="loading"></i>
+            {{ loading ? 'Creating Account...' : 'Create Account' }}
+          </button>
+        </div>
+
+        <!-- Login Link -->
+        <div class="auth-links">
+          <span class="text-muted">Already have an account?</span>
+          <a routerLink="/auth/login" class="auth-link ms-2">
+            <i class="bi bi-box-arrow-in-right me-1"></i>
+            Sign In
+          </a>
+        </div>
+
+        <!-- Terms Note -->
+        <div class="terms-note mt-4 p-3 bg-light rounded">
+          <small class="text-muted">
+            <i class="bi bi-shield-check me-1"></i>
+            By creating an account, you agree to our 
+            <a href="#" class="text-primary">Terms of Service</a> and 
+            <a href="#" class="text-primary">Privacy Policy</a>.
+          </small>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

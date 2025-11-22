@@ -1,0 +1,97 @@
+/* -------------------------------------------------------------------------- */
+/* File: landing-page.component.scss                                          */
+/* -------------------------------------------------------------------------- */
+
+$primary: #0d6efd;
+$primary-600: #0b5ed7;
+$bg-light: #f6f9ff;
+$text-dark: #0f1724;
+
+.landing-root {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  background-color: $bg-light;
+  color: $text-dark;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+
+  // SVG background
+  background: url('/images/landing-bg.svg') no-repeat center center;
+  background-size: cover;
+}
+
+.container {
+  position: relative;
+  z-index: 2;
+  width: min(1180px, 92%);
+  margin: 0 auto;
+}
+
+.nav {
+  padding: 22px 0;
+  .brand {
+    font-weight: 700;
+    color: $primary-600;
+    font-size: 1.25rem;
+  }
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 80px 0 48px 0;
+
+  .title {
+    font-size: 2rem;
+    margin-bottom: 12px;
+    color: $text-dark;
+  }
+  .subtitle {
+    margin-bottom: 24px;
+    color: darken($text-dark, 15%);
+    font-size: 1.05rem;
+  }
+  .hero-ctas {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .instructions {
+    font-size: 0.9rem;
+    color: darken($text-dark, 30%);
+  }
+}
+
+.footer {
+  padding: 22px 0 56px 0;
+  text-align: center;
+  color: darken($text-dark, 30%);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 22px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: $primary;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(13,110,253,0.12);
+
+  &:hover {
+    background: $primary-600;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero { padding-top: 40px; }
+  .title { font-size: 1.5rem; }
+}

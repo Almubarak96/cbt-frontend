@@ -1,0 +1,453 @@
+<!-- 
+  QUESTION MANAGEMENT TEMPLATE
+  @author Almubarak Suleiman
+  Responsive, accessible, and optimized for performance
+-->
+<div class="question-management-container" role="main" aria-label="Question Management">
+
+  <!-- HEADER SECTION -->
+  <header class="management-header" role="banner">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="header-title" id="page-title">
+          <i class="bi bi-patch-question me-2" aria-hidden="true"></i>
+          Question Management
+        </h1>
+        <p class="header-subtitle" aria-describedby="page-title">
+          Manage and organize questions for {{ testTitle }}
+        </p>
+      </div>
+
+      <!-- QUICK STATS -->
+      <div class="header-stats" role="status" aria-live="polite">
+        <div class="stat-item">
+          <div class="stat-number" [attr.aria-label]="'Total questions: ' + (totalItems || 0)">
+            {{ totalItems || 0 }}
+          </div>
+          <div class="stat-label">Total Questions</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-primary"
+            [attr.aria-label]="'Multiple choice questions: ' + getMultipleChoiceCount()">
+            {{ getMultipleChoiceCount() }}
+          </div>
+          <div class="stat-label">MCQ</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-success" [attr.aria-label]="'Other question types: ' + getOtherTypesCount()">
+            {{ getOtherTypesCount() }}
+          </div>
+          <div class="stat-label">Others</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTION BAR -->
+    <div class="action-bar" role="toolbar" aria-label="Question actions">
+      <!-- SEARCH & FILTERS -->
+      <div class="filters-section">
+        <!-- SEARCH BOX -->
+        <div class="search-container">
+          <label for="question-search" class="visually-hidden">Search questions</label>
+          <div class="input-group search-input-group">
+            <span class="input-group-text" id="search-icon">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </span>
+            <input id="question-search" type="text" class="form-control" placeholder="Search questions by text..."
+              [value]="searchKeyword" (input)="onSearch($event)" aria-describedby="search-icon">
+            <button *ngIf="searchKeyword" class="btn btn-outline-secondary btn-clear" type="button"
+              (click)="clearSearch()" aria-label="Clear search">
+              <i class="bi bi-x" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- TYPE FILTER -->
+        <div class="filter-group">
+          <label class="filter-label" id="type-filter-label">Filter by Type:</label>
+          <div class="type-filter-buttons" role="group" aria-labelledby="type-filter-label">
+            <button type="button" class="btn btn-filter-type" [class.active]="selectedType === 'all'"
+              (click)="setTypeFilter('all')" aria-pressed="selectedType === 'all'">
+              <span class="filter-dot all" aria-hidden="true"></span>
+              All Types
+              <span class="filter-count">{{ totalItems || 0 }}</span>
+            </button>
+
+            <button type="button" class="btn btn-filter-type" [class.active]="selectedType === 'MULTIPLE_CHOICE'"
+              (click)="setTypeFilter('MULTIPLE_CHOICE')" aria-pressed="selectedType === 'MULTIPLE_CHOICE'">
+              <span class="filter-dot mcq" aria-hidden="true"></span>
+              Multiple Choice
+              <span class="filter-count">{{ getMultipleChoiceCount() }}</span>
+            </button>
+
+            <button type="button" class="btn btn-filter-type" [class.active]="selectedType === 'TRUE_FALSE'"
+              (click)="setTypeFilter('TRUE_FALSE')" aria-pressed="selectedType === 'TRUE_FALSE'">
+              <span class="filter-dot tf" aria-hidden="true"></span>
+              True/False
+              <span class="filter-count">{{ getTrueFalseCount() }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="action-buttons">
+        <div class="page-size-selector">
+          <label for="page-size-select" class="form-label-sm mb-0">Show:</label>
+          <select id="page-size-select" class="form-select form-select-sm" [(ngModel)]="pageSize"
+            (change)="onPageSizeChange()" aria-label="Items per page">
+            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+          </select>
+        </div>
+
+        <div class="primary-actions">
+          <button (click)="addQuestion()" class="btn btn-primary btn-sm btn-create" aria-label="Add new question">
+            <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>
+            Add Question
+          </button>
+
+          <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#uploadBulkModal"
+            aria-label="Bulk upload questions">
+            <i class="bi bi-upload me-1" aria-hidden="true"></i>
+            Bulk Upload
+          </button>
+
+          <button (click)="onBack()" class="btn btn-outline-secondary btn-sm" aria-label="Back to tests">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+            Back to Tests
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ADVANCED FILTERS SECTION -->
+  <section *ngIf="hasActiveFilters() || searchKeyword" class="advanced-filters-section" role="region"
+    aria-label="Advanced filters">
+    <div class="filters-card">
+      <div class="filters-header">
+        <h6 class="filters-title">
+          <i class="bi bi-funnel me-2" aria-hidden="true"></i>
+          Active Filters
+        </h6>
+        <button class="btn btn-sm btn-outline-secondary" (click)="clearFilters()" aria-label="Clear all filters">
+          <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>
+          Clear All
+        </button>
+      </div>
+
+      <div class="filters-body">
+        <div class="active-filters" *ngIf="hasActiveFilters()">
+          <span class="filter-tag" *ngIf="searchKeyword">
+            Search: "{{ searchKeyword }}"
+          </span>
+          <span class="filter-tag" *ngIf="selectedType !== 'all'">
+            Type: {{ formatQuestionType(selectedType) }}
+          </span>
+          <span class="filter-tag" *ngIf="minMarks !== null">
+            Min Marks: {{ minMarks }}
+          </span>
+          <span class="filter-tag" *ngIf="maxMarks !== null">
+            Max Marks: {{ maxMarks }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loading" class="loading-container" role="status" aria-live="polite" aria-label="Loading questions">
+    <div class="loading-spinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading questions...</span>
+      </div>
+      <p class="loading-text">Loading questions...</p>
+    </div>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div *ngIf="error && !loading" class="error-container" role="alert" aria-live="assertive">
+    <div class="alert alert-danger alert-dismissible fade show">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+        <div>
+          <h6 class="alert-heading mb-1">Unable to Load Questions</h6>
+          <p class="mb-0">{{ error }}</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close" (click)="error = null" aria-label="Close error message"></button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main *ngIf="!loading && !error" class="main-content" role="main">
+
+    <!-- EMPTY STATE -->
+    <div *ngIf="questions.length === 0" class="empty-state" role="status" aria-live="polite">
+      <div class="empty-icon">
+        <i class="bi bi-patch-question" aria-hidden="true"></i>
+      </div>
+      <h3>No Questions Found</h3>
+      <p class="text-muted">
+        {{ hasActiveFilters() ? 'No questions match your search criteria.' : 'Get started by adding your first
+        question.' }}
+      </p>
+      <div class="empty-actions">
+        <button *ngIf="hasActiveFilters()" (click)="clearFilters()" class="btn btn-outline-primary me-2">
+          Clear Filters
+        </button>
+        <button (click)="addQuestion()" class="btn btn-primary">
+          <i class="bi bi-plus-lg me-2" aria-hidden="true"></i>
+          Add Question
+        </button>
+      </div>
+    </div>
+
+    <!-- QUESTIONS TABLE - DESKTOP -->
+  <!-- BEAUTIFUL QUESTIONS TABLE - DESKTOP -->
+<div *ngIf="questions.length > 0 && !isMobile" class="questions-table-container">
+  <div class="table-container">
+    <table class="beautiful-questions-table">
+      <thead>
+        <tr>
+          <th (click)="onSort('text')" class="sortable">
+            <div class="th-content">
+              Question Text
+              <i class="bi" [class]="getSortIcon('text')"></i>
+            </div>
+          </th>
+          <th class="text-center">
+            <div class="th-content">
+              Choices/Options
+            </div>
+          </th>
+          <th (click)="onSort('correctAnswer')" class="sortable text-center">
+            <div class="th-content">
+              Correct Answer
+              <i class="bi" [class]="getSortIcon('correctAnswer')"></i>
+            </div>
+          </th>
+          <th (click)="onSort('type')" class="sortable text-center">
+            <div class="th-content">
+              Type
+              <i class="bi" [class]="getSortIcon('type')"></i>
+            </div>
+          </th>
+          <th (click)="onSort('maxMarks')" class="sortable text-center">
+            <div class="th-content">
+              Marks
+              <i class="bi" [class]="getSortIcon('maxMarks')"></i>
+            </div>
+          </th>
+          <th class="text-center">
+            <div class="th-content">
+              Actions
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let question of questions; trackBy: trackByQuestionId" 
+            class="question-row">
+          
+          <!-- Question Text Column -->
+          <td class="question-text-cell">
+            <div class="question-main">
+              <div class="question-text" [title]="question.text">
+                {{ question.text }}
+              </div>
+              <div *ngIf="question.explanation && question.explanation.trim() !== ''" 
+                   class="question-explanation">
+                {{ question.explanation }}
+              </div>
+            </div>
+          </td>
+
+          <!-- Choices Column -->
+          <td class="choices-cell">
+            <div class="choices-container">
+              <ng-container *ngIf="question.choices && question.choices.length > 0; else noChoices">
+                <div *ngIf="question.type === 'MULTIPLE_CHOICE' || question.type === 'MULTIPLE_SELECT'" 
+                     class="choices-list">
+                  <div *ngFor="let choice of (question.choices | jsonToChoices); 
+                              trackBy: trackByChoiceId; 
+                              let i = index" 
+                       class="choice-item">
+                    <span class="choice-letter">{{ getChoiceLetter(i) }}</span>
+                    <span class="choice-text">{{ choice }}</span>
+                  </div>
+                </div>
+                <div *ngIf="question.type !== 'MULTIPLE_CHOICE' && question.type !== 'MULTIPLE_SELECT'" 
+                     class="simple-choices">
+                  {{ question.choices }}
+                </div>
+              </ng-container>
+              <ng-template #noChoices>
+                <span class="no-choices">No choices</span>
+              </ng-template>
+            </div>
+          </td>
+
+          <!-- Correct Answer Column -->
+          <td class="text-center answer-cell">
+            <span class="correct-answer-badge">
+              <i class="bi bi-check-circle-fill me-1"></i>
+              {{ question.correctAnswer || 'N/A' }}
+            </span>
+          </td>
+
+          <!-- Type Column -->
+          <td class="text-center type-cell">
+            <span class="question-type-badge" [ngClass]="getQuestionTypeClass(question.type || '')">
+              {{ formatQuestionType(question.type || '') }}
+            </span>
+          </td>
+
+          <!-- Marks Column -->
+          <td class="text-center marks-cell">
+            <div class="marks-display">
+              <span class="marks-value">{{ question.maxMarks || 0 }}</span>
+              <span class="marks-label">marks</span>
+            </div>
+          </td>
+
+          <!-- Actions Column -->
+          <td class="text-center actions-cell">
+            <div class="table-actions">
+              <button (click)="editQuestion(question)" class="btn-action" title="Edit question">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button (click)="previewQuestion(question)" class="btn-action" title="Preview question">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+    <!-- QUESTIONS CARDS - MOBILE -->
+    <div *ngIf="questions.length > 0 && isMobile" class="questions-cards-container">
+      <div class="questions-cards">
+        <div *ngFor="let question of questions; trackBy: trackByQuestionId" class="question-card">
+          <div class="card-header">
+            <span class="question-type-badge" [ngClass]="getQuestionTypeClass(question.type || '')">
+              {{ formatQuestionType(question.type || '') }}
+            </span>
+            <span class="marks-badge">{{ question.maxMarks || 0 }} marks</span>
+          </div>
+
+          <div class="card-body">
+            <h6 class="question-text">{{ question.text }}</h6>
+
+            <div *ngIf="question.explanation && question.explanation.trim() !== ''" class="question-explanation">
+              {{ question.explanation }}
+            </div>
+
+            <div class="correct-answer-mobile">
+              <strong>Answer:</strong> {{ question.correctAnswer || 'N/A' }}
+            </div>
+            <!-- In the mobile cards -->
+            <div *ngIf="question.choices && question.choices.length > 0" class="choices-mobile">
+              <strong>Options:</strong>
+              <div class="choices-list-mobile">
+                <span *ngFor="let choice of (question.choices | jsonToChoices); 
+                  trackBy: trackByChoiceId; 
+                  let i = index" class="choice-item-mobile">
+                  <span class="choice-letter">{{ getChoiceLetter(i) }}</span>
+                  {{ choice }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="mobile-actions">
+              <button (click)="editQuestion(question)" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-pencil me-1" aria-hidden="true"></i>
+                Edit
+              </button>
+              <button (click)="previewQuestion(question)" class="btn btn-outline-info btn-sm">
+                <i class="bi bi-eye me-1" aria-hidden="true"></i>
+                Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGINATION -->
+    <div *ngIf="questions.length > 0 && totalPages > 1" class="pagination-section" role="navigation"
+      aria-label="Question pagination">
+      <div class="pagination-info" aria-live="polite">
+        Showing <strong>{{ startIndex }}</strong> to <strong>{{ endIndex }}</strong>
+        of <strong>{{ totalItems }}</strong> questions
+      </div>
+
+      <nav class="pagination-nav" aria-label="Pagination">
+        <ul class="pagination">
+          <!-- First Page -->
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" (click)="goToPage(0)" aria-label="Go to first page"
+              [attr.tabindex]="currentPage === 0 ? -1 : 0">
+              <i class="bi bi-chevron-double-left" aria-hidden="true"></i>
+            </a>
+          </li>
+
+          <!-- Previous Page -->
+          <li class="page-item" [class.disabled]="!hasPrevious">
+            <a class="page-link" (click)="goToPage(currentPage - 1)" aria-label="Go to previous page"
+              [attr.tabindex]="!hasPrevious ? -1 : 0">
+              <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </a>
+          </li>
+
+          <!-- Page Numbers -->
+          <li *ngFor="let page of getVisiblePages()" class="page-item" [class.active]="page === currentPage"
+            [attr.aria-current]="page === currentPage ? 'page' : null">
+            <a class="page-link" (click)="goToPage(page)">
+              {{ page + 1 }}
+            </a>
+          </li>
+
+          <!-- Next Page -->
+          <li class="page-item" [class.disabled]="!hasNext">
+            <a class="page-link" (click)="goToPage(currentPage + 1)" aria-label="Go to next page"
+              [attr.tabindex]="!hasNext ? -1 : 0">
+              <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
+          </li>
+
+          <!-- Last Page -->
+          <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+            <a class="page-link" (click)="goToPage(totalPages - 1)" aria-label="Go to last page"
+              [attr.tabindex]="currentPage === totalPages - 1 ? -1 : 0">
+              <i class="bi bi-chevron-double-right" aria-hidden="true"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </main>
+</div>
+
+<!-- UPLOAD BULK MODAL -->
+<div class="modal fade" id="uploadBulkModal" tabindex="-1" aria-labelledby="uploadBulkModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h6 class="modal-title" id="uploadBulkModalLabel">
+          <i class="bi bi-upload me-2" aria-hidden="true"></i>
+          Upload Questions
+        </h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <question-upload [testId]="testId" (uploadComplete)="onUploadComplete()"></question-upload>
+      </div>
+    </div>
+  </div>
+</div>

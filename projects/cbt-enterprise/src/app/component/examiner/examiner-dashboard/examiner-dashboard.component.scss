@@ -1,0 +1,495 @@
+@import 'variables';
+@import 'tables';
+
+.dashboard-container {
+  padding: 0;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+// Premium Dashboard Header - Consistent with other components
+.dashboard-header {
+  background: linear-gradient(135deg, #ffffff 0%, #fdfeff 100%);
+  border-bottom: 1px solid rgba($primary-color, 0.1);
+  padding: 1.5rem 2rem;
+  box-shadow: $shadow-sm;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, $primary-color, $success-color, $warning-color, $info);
+    background-size: 300% 300%;
+    animation: shimmer 3s ease infinite;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+
+    .header-text {
+      .header-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, $dark-color 0%, lighten($dark-color, 15%) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        letter-spacing: -0.5px;
+
+        i {
+          background: linear-gradient(135deg, $primary-color, lighten($primary-color, 15%));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          font-size: 1.6rem;
+          margin-right: 0.5rem;
+          filter: drop-shadow(0 2px 4px rgba($primary-color, 0.2));
+        }
+      }
+
+      .header-subtitle {
+        font-size: 0.95rem;
+        color: lighten($secondary-color, 10%);
+        margin: 0;
+        font-weight: 500;
+        letter-spacing: -0.2px;
+      }
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+
+      .date-range-filter {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        .filter-label {
+          font-weight: 600;
+          color: $dark-color;
+          margin: 0;
+          font-size: 0.85rem;
+          white-space: nowrap;
+        }
+
+        .form-select {
+          min-width: 140px;
+          border: 1px solid rgba($primary-color, 0.2);
+          border-radius: 8px;
+          font-size: 0.85rem;
+          font-weight: 500;
+
+          &:focus {
+            border-color: $primary-color;
+            box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+          }
+        }
+      }
+
+      .view-switcher {
+        display: flex;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 0.25rem;
+        border-radius: 12px;
+        border: 1px solid rgba($primary-color, 0.1);
+        backdrop-filter: blur(10px);
+
+        .btn-view {
+          padding: 0.5rem 1rem;
+          border: none;
+          border-radius: 8px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: $secondary-color;
+          background: transparent;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background: rgba($primary-color, 0.1);
+            color: $primary-color;
+          }
+
+          &.active {
+            background: $primary-gradient;
+            color: white;
+            box-shadow: $shadow-sm;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Metrics Grid - All in one row on desktop
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  padding: 2rem;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+}
+
+.metric-card {
+  background: white;
+  border-radius: $table-radius;
+  padding: 1.5rem;
+  box-shadow: $shadow-sm;
+  border: 1px solid $table-border;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-lg;
+  }
+
+  .metric-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+
+    &.bg-primary { background: $primary-gradient; }
+    &.bg-success { background: linear-gradient(135deg, $success-color, lighten($success-color, 10%)); }
+    &.bg-warning { background: linear-gradient(135deg, $warning-color, lighten($warning-color, 10%)); }
+    &.bg-info { background: linear-gradient(135deg, $info, lighten($info, 10%)); }
+  }
+
+  .metric-content {
+    flex: 1;
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+      background: linear-gradient(135deg, $dark-color, lighten($dark-color, 15%));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .metric-label {
+      font-size: 0.9rem;
+      color: $secondary-color;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric-trend {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+  }
+}
+
+// Charts Grid - 2 columns on desktop, 1 on mobile
+.charts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0 2rem 2rem;
+}
+
+.chart-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background: white;
+  border-radius: $table-radius;
+  box-shadow: $shadow-sm;
+  border: 1px solid $table-border;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+  }
+
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid $table-border;
+    background: $table-header-bg;
+
+    .chart-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: $dark-color;
+      margin: 0;
+    }
+
+    .chart-actions {
+      .btn {
+        border-radius: 6px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+      }
+    }
+  }
+
+  .chart-container {
+    padding: 1rem;
+    height: 300px;
+  }
+}
+
+// Activity Grid
+.activity-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  padding: 0 2rem 2rem;
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.activity-card,
+.actions-card {
+  background: white;
+  border-radius: $table-radius;
+  box-shadow: $shadow-sm;
+  border: 1px solid $table-border;
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid $table-border;
+    background: $table-header-bg;
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: $dark-color;
+      margin: 0;
+    }
+  }
+}
+
+.activity-list {
+  padding: 1rem;
+
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba($table-border, 0.5);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1rem;
+
+      &.bg-success { background: $success-color; }
+      &.bg-primary { background: $primary-color; }
+      &.bg-warning { background: $warning-color; }
+      &.bg-info { background: $info; }
+    }
+
+    .activity-content {
+      flex: 1;
+
+      .activity-text {
+        font-weight: 500;
+        color: $dark-color;
+        margin-bottom: 0.25rem;
+      }
+
+      .activity-time {
+        font-size: 0.8rem;
+        color: $secondary-color;
+      }
+    }
+  }
+
+  .activity-empty {
+    text-align: center;
+    padding: 2rem;
+    color: $secondary-color;
+
+    i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding: 1.5rem;
+
+  .btn-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 2px solid $table-border;
+    border-radius: $border-radius-md;
+    background: white;
+    color: $dark-color;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    cursor: pointer;
+
+    i {
+      font-size: 1.5rem;
+      color: $primary-color;
+    }
+
+    span {
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    &:hover {
+      border-color: $primary-color;
+      background: rgba($primary-color, 0.05);
+      transform: translateY(-2px);
+      box-shadow: $shadow-sm;
+    }
+  }
+}
+
+// Animations
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+// Loading State
+.loading-container {
+  padding: 4rem 2rem;
+  text-align: center;
+
+  .loading-spinner {
+    .spinner-border {
+      width: 3rem;
+      height: 3rem;
+      border-width: 0.2em;
+    }
+
+    .loading-text {
+      margin-top: 1rem;
+      color: $secondary-color;
+      font-size: 1.1rem;
+    }
+  }
+}
+
+// ECharts Specific Styles
+.echarts-chart {
+  width: 100%;
+  height: 100%;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 1rem;
+
+    .header-content {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+
+      .header-controls {
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+
+        .date-range-filter {
+          justify-content: center;
+        }
+
+        .view-switcher {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    }
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .charts-grid {
+    padding: 0 1rem 1rem;
+  }
+
+  .activity-grid {
+    padding: 0 1rem 1rem;
+  }
+
+  .chart-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+}

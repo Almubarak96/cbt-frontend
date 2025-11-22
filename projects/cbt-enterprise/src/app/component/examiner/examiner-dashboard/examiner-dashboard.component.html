@@ -1,0 +1,306 @@
+<div class="dashboard-container">
+  <!-- Premium Header with Date Range Filter -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="header-title">
+          <i class="bi bi-speedometer2 me-2"></i>
+          Platform Dashboard
+        </h1>
+        <p class="header-subtitle">Comprehensive overview of your testing platform performance</p>
+      </div>
+      
+      <div class="header-controls">
+        <!-- Date Range Filter -->
+        <div class="date-range-filter">
+          <label class="filter-label">Date Range:</label>
+          <select class="form-select form-select-sm" [(ngModel)]="dateRange" (change)="onDateRangeChange(dateRange)">
+            <option value="today">Today</option>
+            <option value="week">Last Week</option>
+            <option value="month" selected>Last Month</option>
+            <option value="year">Last Year</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+
+        <!-- View Switcher -->
+        <div class="view-switcher">
+          <button class="btn btn-view" [class.active]="currentView === 'overview'" 
+                  (click)="switchView('overview')">
+            <i class="bi bi-house"></i> Overview
+          </button>
+          <button class="btn btn-view" [class.active]="currentView === 'analytics'" 
+                  (click)="switchView('analytics')">
+            <i class="bi bi-bar-chart"></i> Analytics
+          </button>
+          <button class="btn btn-view" [class.active]="currentView === 'management'" 
+                  (click)="switchView('management')">
+            <i class="bi bi-gear"></i> Management
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="loading-text">Loading dashboard data...</p>
+    </div>
+  </div>
+
+  <!-- Main Dashboard Content -->
+  <div *ngIf="!loading" class="dashboard-content">
+    
+    <!-- Key Metrics Cards - All in one row on desktop -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon bg-primary">
+          <i class="bi bi-card-checklist"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value">{{ stats.totalTests || 0 }}</div>
+          <div class="metric-label">Total Tests</div>
+          <div class="metric-trend" [class.text-success]="stats.totalTests > 0" 
+               [class.text-muted]="stats.totalTests === 0">
+            <i class="bi" [class.bi-arrow-up]="stats.totalTests > 0" 
+               [class.bi-dash]="stats.totalTests === 0"></i>
+            {{ stats.totalTests > 0 ? 'Active' : 'No tests' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon bg-success">
+          <i class="bi bi-people"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value">{{ stats.totalStudents || 0 }}</div>
+          <div class="metric-label">Active Students</div>
+          <div class="metric-trend" [class.text-success]="stats.totalStudents > 0" 
+               [class.text-muted]="stats.totalStudents === 0">
+            <i class="bi" [class.bi-arrow-up]="stats.totalStudents > 0" 
+               [class.bi-dash]="stats.totalStudents === 0"></i>
+            {{ stats.enrollmentRate || 0 | number:'1.0-0' }}% enrolled
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon bg-warning">
+          <i class="bi bi-person-check"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value">{{ stats.totalExaminers || 0 }}</div>
+          <div class="metric-label">Examiners</div>
+          <div class="metric-trend" [class.text-success]="stats.totalExaminers > 0" 
+               [class.text-muted]="stats.totalExaminers === 0">
+            <i class="bi" [class.bi-arrow-up]="stats.totalExaminers > 0" 
+               [class.bi-dash]="stats.totalExaminers === 0"></i>
+            {{ stats.totalExaminers > 0 ? 'Active' : 'None' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon bg-info">
+          <i class="bi bi-graph-up"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value">{{ (stats.averageScore || 0).toFixed(1) }}%</div>
+          <div class="metric-label">Avg. Score</div>
+          <div class="metric-trend" [class.text-success]="stats.averageScore >= 70" 
+               [class.text-warning]="stats.averageScore >= 50 && stats.averageScore < 70"
+               [class.text-danger]="stats.averageScore < 50">
+            <i class="bi" [class.bi-arrow-up]="stats.averageScore >= 70" 
+               [class.bi-arrow-down]="stats.averageScore < 50"
+               [class.bi-dash]="stats.averageScore >= 50 && stats.averageScore < 70"></i>
+            {{ stats.passRate || 0 | number:'1.0-0' }}% pass rate
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Grid - 2 columns on desktop, 1 on mobile -->
+    <div class="charts-grid">
+      <!-- Row 1 -->
+      <div class="chart-row">
+        <!-- Score Distribution -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h5 class="chart-title">Score Distribution</h5>
+            <div class="chart-actions">
+              <button class="btn btn-sm btn-outline-secondary" (click)="exportChart('scoreDistribution')">
+                <i class="bi bi-download"></i>
+              </button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div echarts 
+                 [options]="scoreDistributionOptions" 
+                 (chartInit)="onChartInit($event, 'scoreDistribution')"
+                 class="echarts-chart">
+            </div>
+          </div>
+        </div>
+
+        <!-- Test Status -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h5 class="chart-title">Test Status Overview</h5>
+            <div class="chart-actions">
+              <button class="btn btn-sm btn-outline-secondary" (click)="exportChart('testStatus')">
+                <i class="bi bi-download"></i>
+              </button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div echarts 
+                 [options]="testStatusOptions" 
+                 (chartInit)="onChartInit($event, 'testStatus')"
+                 class="echarts-chart">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="chart-row">
+        <!-- Enrollment Trends -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h5 class="chart-title">Enrollment Trends</h5>
+            <div class="chart-actions">
+              <button class="btn btn-sm btn-outline-secondary" (click)="exportChart('enrollmentTrends')">
+                <i class="bi bi-download"></i>
+              </button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div echarts 
+                 [options]="enrollmentTrendOptions" 
+                 (chartInit)="onChartInit($event, 'enrollmentTrends')"
+                 class="echarts-chart">
+            </div>
+          </div>
+        </div>
+
+        <!-- Test Performance -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h5 class="chart-title">Test Performance</h5>
+            <div class="chart-actions">
+              <button class="btn btn-sm btn-outline-secondary" (click)="exportChart('testPerformance')">
+                <i class="bi bi-download"></i>
+              </button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div echarts 
+                 [options]="testPerformanceOptions" 
+                 (chartInit)="onChartInit($event, 'testPerformance')"
+                 class="echarts-chart">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="chart-row">
+        <!-- Question Types -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h5 class="chart-title">Question Type Distribution</h5>
+            <div class="chart-actions">
+              <button class="btn btn-sm btn-outline-secondary" (click)="exportChart('questionTypes')">
+                <i class="bi bi-download"></i>
+              </button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div echarts 
+                 [options]="questionTypeOptions" 
+                 (chartInit)="onChartInit($event, 'questionTypes')"
+                 class="echarts-chart">
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Trends -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h5 class="chart-title">Performance Trends</h5>
+            <div class="chart-actions">
+              <button class="btn btn-sm btn-outline-secondary" (click)="exportChart('performanceTrends')">
+                <i class="bi bi-download"></i>
+              </button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div echarts 
+                 [options]="performanceTrendOptions" 
+                 (chartInit)="onChartInit($event, 'performanceTrends')"
+                 class="echarts-chart">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity & Quick Actions -->
+    <div class="activity-grid">
+      <!-- Recent Activity -->
+      <div class="activity-card">
+        <div class="card-header">
+          <h5 class="card-title">Recent Activity</h5>
+          <button class="btn btn-sm btn-outline-primary" (click)="refreshDashboard()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+          </button>
+        </div>
+        <div class="activity-list">
+          <div *ngFor="let activity of getRecentActivities()" class="activity-item">
+            <div class="activity-icon" [ngClass]="'bg-' + (activity.type === 'test_created' ? 'primary' : 'success')">
+              <i [class]="activity.icon"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-text">{{ activity.description }}</div>
+              <div class="activity-time">{{ activity.time }}</div>
+            </div>
+          </div>
+          <div *ngIf="!hasRecentActivities()" class="activity-empty">
+            <i class="bi bi-inbox"></i>
+            <p>No recent activity</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="actions-card">
+        <div class="card-header">
+          <h5 class="card-title">Quick Actions</h5>
+        </div>
+        <div class="actions-grid">
+          <button class="btn btn-action" routerLink="/examiner/tests/create">
+            <i class="bi bi-plus-circle"></i>
+            <span>Create Test</span>
+          </button>
+          <button class="btn btn-action" routerLink="/examiner/analytics">
+            <i class="bi bi-bar-chart"></i>
+            <span>View Analytics</span>
+          </button>
+          <button class="btn btn-action" routerLink="/examiner/students">
+            <i class="bi bi-people"></i>
+            <span>Manage Students</span>
+          </button>
+          <button class="btn btn-action" routerLink="/examiner/questions">
+            <i class="bi bi-patch-question"></i>
+            <span>Question Bank</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

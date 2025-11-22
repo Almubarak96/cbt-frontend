@@ -1,0 +1,223 @@
+.exam-results-container {
+  // Header Styles
+  .results-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    
+    .score-display {
+      .percentage-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        
+        .percentage-value {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: white;
+        }
+        
+        &.excellent { border-color: rgba(40, 167, 69, 0.8); }
+        &.good { border-color: rgba(23, 162, 184, 0.8); }
+        &.average { border-color: rgba(255, 193, 7, 0.8); }
+        &.poor { border-color: rgba(220, 53, 69, 0.8); }
+      }
+      
+      .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        
+        &.status-pass {
+          background: rgba(40, 167, 69, 0.2);
+          color: #28a745;
+          border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+        
+        &.status-fail {
+          background: rgba(220, 53, 69, 0.2);
+          color: #dc3545;
+          border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+      }
+    }
+  }
+
+  // Metric Cards
+  .metric-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .metric-icon {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    
+    .metric-value {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .metric-label {
+      font-size: 0.875rem;
+    }
+  }
+
+  // Distribution Progress
+  .distribution-progress {
+    height: 30px;
+    border-radius: 15px;
+    overflow: hidden;
+    
+    .progress-bar {
+      position: relative;
+      font-weight: 600;
+      font-size: 0.75rem;
+      
+      .progress-text {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+      }
+    }
+  }
+
+  // Question Table
+  .question-row {
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.02) !important;
+    }
+    
+    .question-text {
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .score-badge, .status-badge {
+      padding: 0.375rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+  }
+
+  // Badge Styles
+  .badge {
+    &.type-multiple-choice { background-color: #e3f2fd; color: #1976d2; }
+    &.type-true-false { background-color: #e8f5e8; color: #2e7d32; }
+    &.type-essay { background-color: #f3e5f5; color: #7b1fa2; }
+    &.type-fill-blank { background-color: #fff3e0; color: #f57c00; }
+    
+    &.performance-excellent { background-color: #28a745; color: white; }
+    &.performance-good { background-color: #17a2b8; color: white; }
+    &.performance-average { background-color: #ffc107; color: black; }
+    &.performance-poor { background-color: #dc3545; color: white; }
+  }
+
+  // Feedback Section
+  .feedback-content {
+    border-left: 4px solid;
+    padding-left: 1rem;
+    
+    &.border-success { border-color: #28a745; }
+    &.border-warning { border-color: #ffc107; }
+  }
+
+  // Next Steps
+  .step-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  // Loading and Error States
+  .min-vh-50 {
+    min-height: 50vh;
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    .results-header {
+      .percentage-circle {
+        width: 80px;
+        height: 80px;
+        
+        .percentage-value {
+          font-size: 1.25rem;
+        }
+      }
+    }
+    
+    .metric-card {
+      .metric-value {
+        font-size: 1.5rem;
+      }
+    }
+    
+    .question-text {
+      max-width: 200px !important;
+    }
+  }
+
+  // Print Styles
+  @media print {
+    .btn, .action-section {
+      display: none !important;
+    }
+    
+    .card {
+      border: 1px solid #dee2e6 !important;
+      box-shadow: none !important;
+    }
+    
+    .results-header {
+      background: #f8f9fa !important;
+      color: #212529 !important;
+      
+      .percentage-circle {
+        background: white !important;
+        border-color: #dee2e6 !important;
+        
+        .percentage-value {
+          color: #212529 !important;
+        }
+      }
+    }
+  }
+}
+
+// Utility Classes
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.text-excellent { color: #28a745 !important; }
+.text-good { color: #17a2b8 !important; }
+.text-average { color: #ffc107 !important; }
+.text-poor { color: #dc3545 !important; }
+
+.bg-excellent { background-color: rgba(40, 167, 69, 0.1) !important; }
+.bg-good { background-color: rgba(23, 162, 184, 0.1) !important; }
+.bg-average { background-color: rgba(255, 193, 7, 0.1) !important; }
+.bg-poor { background-color: rgba(220, 53, 69, 0.1) !important; }

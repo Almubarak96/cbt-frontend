@@ -1,0 +1,476 @@
+<!-- test-session.component.html -->
+<div class="test-session-container" [style.min-height.px]="screenHeight">
+  
+  <!-- Custom Modal Component -->
+  <app-custom-modal></app-custom-modal>
+
+  <!-- Header Section -->
+  <div class="session-header">
+    <!-- Filter Buttons -->
+    <div class="filter-section text-center mb-0">
+      <div class="filter-buttons d-flex justify-content-center gap-2 flex-wrap">
+        <button class="btn btn-filter" [class.active]="currentFilter === QuestionType.MULTIPLE_CHOICE"
+          (click)="filterByType(QuestionType.MULTIPLE_CHOICE)">
+          <i class="bi bi-ui-checks"></i> MCQ
+        </button>
+        <button class="btn btn-filter" [class.active]="currentFilter === QuestionType.MULTIPLE_SELECT"
+          (click)="filterByType(QuestionType.MULTIPLE_SELECT)">
+          <i class="bi bi-check2-square"></i> MSQ
+        </button>
+        <button class="btn btn-filter" [class.active]="currentFilter === QuestionType.TRUE_FALSE"
+          (click)="filterByType(QuestionType.TRUE_FALSE)">
+          <i class="bi bi-toggle-on"></i> True/False
+        </button>
+        <button class="btn btn-filter" [class.active]="currentFilter === QuestionType.FILL_IN_THE_BLANK"
+          (click)="filterByType(QuestionType.FILL_IN_THE_BLANK)">
+          <i class="bi bi-input-cursor-text"></i> Fill Blank
+        </button>
+        <button class="btn btn-filter" [class.active]="currentFilter === QuestionType.ESSAY"
+          (click)="filterByType(QuestionType.ESSAY)">
+          <i class="bi bi-file-text"></i> Essay
+        </button>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar card shadow-sm border-0 mb-3">
+      <div class="card-body py-3">
+        <div class="row align-items-center">
+          <!-- Video Preview -->
+          <div class="col-md-3 mb-3 mb-md-0">
+            <div class="video-section">
+              <div class="video-preview">
+                <app-proctoring-widget></app-proctoring-widget>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress & Timer -->
+          <div class="col-md-6 mb-3 mb-md-0">
+            <div class="progress-section text-center">
+              <div class="progress-container position-relative">
+                <div class="progress" style="height: 28px; border-radius: 14px;">
+                  <div class="progress-bar" [ngClass]="getProgressBarClass()" role="progressbar"
+                    [style.width.%]="(timeLeft / totalDuration) * 100">
+                  </div>
+                </div>
+                <div class="timer-display position-absolute top-50 start-50 translate-middle">
+                  <span class="countdown-text fw-bold">
+                    {{ timeLeft | countdown }}
+                  </span>
+                </div>
+              </div>
+              <div class="progress-info mt-2">
+                <small class="text-muted">
+                  Question {{ page + 1 }} of {{ totalPages }} •
+                  {{ ((timeLeft / totalDuration) * 100).toFixed(0) }}% Time Remaining
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="col-md-3">
+            <div class="action-buttons d-flex gap-2 justify-content-center justify-content-md-end">
+              <button class="btn btn-primary btn-map" data-bs-toggle="modal" data-bs-target="#questionMapModal"
+                (click)="getQuestionMaps()">
+                <i class="bi bi-map"></i> Question Map
+              </button>
+              <!-- Calculator Toggle -->
+              <button class="btn btn-outline-primary" data-bs-toggle="offcanvas" data-bs-target="#calculatorOffcanvas">
+                <i class="bi bi-calculator"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions Modal -->
+  <app-test-instructions [examId]="currentTestId" [showModal]="showInstructionsModal" (modalClosed)="onModalClosed()"
+    (instructionsAcknowledged)="onInstructionsAcknowledged()">
+  </app-test-instructions>
+
+  <!-- Main Content - Optimized for Screen Height -->
+  <div class="question-content" #questionContent [style.max-height]="contentMaxHeight">
+    <div class="card question-card shadow border-0 h-100">
+      <div class="card-body p-4">
+        <div class="row g-4" *ngFor="let q of questions">
+          <!-- Media Section -->
+          <div class="col-lg-4" *ngIf="hasMedia(q)">
+            <div class="media-section">
+              <div class="media-card card border-0 h-100">
+                <div class="card-body text-center p-3">
+                  <!-- Image Media -->
+                  <div *ngIf="q.mediaType === 'IMAGE'" class="media-content">
+                    <img [src]="getMediaUrl(q.mediaPath)" [alt]="q.mediaCaption || 'Question image'"
+                      class="img-fluid rounded media-image">
+                    <div *ngIf="q.mediaCaption" class="media-caption mt-2">
+                      <small class="text-muted">{{ q.mediaCaption }}</small>
+                    </div>
+                  </div>
+
+                  <!-- Video Media -->
+                  <div *ngIf="q.mediaType === 'VIDEO'" class="media-content">
+                    <video controls class="media-video rounded w-100">
+                      <source [src]="getMediaUrl(q.mediaPath)" type="video/mp4">
+                      Your browser does not support the video tag.
+                    </video>
+                    <div *ngIf="q.mediaCaption" class="media-caption mt-2">
+                      <small class="text-muted">{{ q.mediaCaption }}</small>
+                    </div>
+                  </div>
+
+                  <!-- Audio Media -->
+                  <div *ngIf="q.mediaType === 'AUDIO'" class="media-content">
+                    <div class="audio-player card border-0 bg-light">
+                      <div class="card-body p-3">
+                        <audio controls class="w-100">
+                          <source [src]="getMediaUrl(q.mediaPath)" type="audio/mpeg">
+                          Your browser does not support the audio element.
+                        </audio>
+                        <div *ngIf="q.mediaCaption" class="media-caption mt-2">
+                          <small class="text-muted">{{ q.mediaCaption }}</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Question Section -->
+          <div [class]="hasMedia(q) ? 'col-lg-8' : 'col-12'">
+            <div class="question-section">
+              <!-- Question Header -->
+              <div class="question-header mb-4">
+                <div class="d-flex justify-content-between align-items-start">
+                  <h5 class="question-title mb-0">Question {{ page + 1 }} of {{ totalPages }}</h5>
+                  <span class="badge question-type-badge" [ngClass]="getQuestionTypeClass(q.type)">
+                    {{ formatQuestionType(q.type) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Question Text -->
+              <div class="question-text-card card border-0 bg-light mb-4">
+                <div class="card-body">
+                  <p class="question-text mb-0 fs-6">{{ q.text }}</p>
+                </div>
+              </div>
+
+              <!-- Answer Options -->
+              <div class="answer-section">
+                <!-- Multiple Choice -->
+                <div *ngIf="q.type === QuestionType.MULTIPLE_CHOICE" class="options-grid">
+                  <div *ngFor="let opt of q.choicesArray; let i = index" class="option-item"
+                    [class.selected]="q.savedAnswer === opt">
+                    <input class="form-check-input" type="radio" [name]="'question_' + q.studentExamQuestionId"
+                      [value]="opt" [checked]="q.savedAnswer === opt" (change)="saveAnswer(q, opt)"
+                      id="{{'opt_' + q.studentExamQuestionId + '_' + i}}">
+                    <label class="form-check-label" [for]="'opt_' + q.studentExamQuestionId + '_' + i">
+                      <span class="option-letter">{{ getOptionLetter(i) }}</span>
+                      <span class="option-text">{{ opt }}</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Multiple Select -->
+                <div *ngIf="q.type === QuestionType.MULTIPLE_SELECT" class="options-grid msq-grid">
+                  <div *ngFor="let opt of q.choicesArray; let i = index" class="option-item"
+                    [class.selected]="isCheckboxChecked(q, opt)">
+                    <input class="form-check-input" type="checkbox" [name]="'question_' + q.studentExamQuestionId"
+                      [value]="opt" [checked]="isCheckboxChecked(q, opt)" (change)="onCheckboxChange(q, opt, $event)"
+                      id="{{'msq_' + q.studentExamQuestionId + '_' + i}}">
+                    <label class="form-check-label" [for]="'msq_' + q.studentExamQuestionId + '_' + i">
+                      <span class="option-letter">{{ getOptionLetter(i) }}</span>
+                      <span class="option-text">{{ opt }}</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- True/False -->
+                <div *ngIf="q.type === QuestionType.TRUE_FALSE" class="true-false-section">
+                  <div class="true-false-grid">
+                    <!-- True Option -->
+                    <div class="tf-option">
+                      <input class="form-check-input" type="radio" [name]="'question_' + q.studentExamQuestionId"
+                        value="True" [checked]="q.savedAnswer === 'True'" (change)="saveAnswer(q, 'True')"
+                        id="{{'tf_true_' + q.studentExamQuestionId}}">
+                      <label class="form-check-label tf-label true-label" [for]="'tf_true_' + q.studentExamQuestionId"
+                        [class.selected]="q.savedAnswer === 'True'">
+                        <i class="bi bi-check-circle"></i> True
+                      </label>
+                    </div>
+
+                    <!-- False Option -->
+                    <div class="tf-option">
+                      <input class="form-check-input" type="radio" [name]="'question_' + q.studentExamQuestionId"
+                        value="False" [checked]="q.savedAnswer === 'False'" (change)="saveAnswer(q, 'False')"
+                        id="{{'tf_false_' + q.studentExamQuestionId}}">
+                      <label class="form-check-label tf-label false-label" [for]="'tf_false_' + q.studentExamQuestionId"
+                        [class.selected]="q.savedAnswer === 'False'">
+                        <i class="bi bi-x-circle"></i> False
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Fill in Blank -->
+                <div *ngIf="q.type === QuestionType.FILL_IN_THE_BLANK" class="fib-section">
+                  <label class="form-label">Your Answer:</label>
+                  <input [value]="getSavedAnswer(q)" class="form-control fib-input"
+                    placeholder="Type your answer here..." (input)="saveAnswer(q, $any($event.target).value)">
+                </div>
+
+                <!-- Essay - Enhanced Quill Editor -->
+                <div *ngIf="q.type === QuestionType.ESSAY" class="essay-section">
+                  <label class="form-label">Your Essay Answer:</label>
+                  <div class="essay-editor-container card border-0">
+                    <div class="card-body p-0">
+                      <quill-editor class="essay-editor" 
+                        [theme]="quillConfig.theme" 
+                        [modules]="quillConfig.modules"
+                        [ngModel]="getSavedAnswer(q)" 
+                        (onContentChanged)="onEssayContentChange(q, $event.html)"
+                        (onModelChange)="onEssayContentChange(q, $event)" 
+                        [styles]="{'min-height': '200px', 'max-height': '400px'}"
+                        [placeholder]="quillConfig.placeholder">
+                      </quill-editor>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pt-2">
+                      <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Use the toolbar above to format your essay. Your work is auto-saved.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation-section mt-4 pt-3 border-top">
+          <div class="row align-items-center">
+            <div class="col-md-4">
+              <button class="btn btn-navigation btn-outline-primary" (click)="prevPage()" [disabled]="page === 0">
+                <i class="bi bi-chevron-left"></i> Previous
+              </button>
+            </div>
+            <div class="col-md-4 text-center">
+              <div class="page-info">
+                <span class="text-muted">Page {{ page + 1 }} of {{ totalPages }}</span>
+              </div>
+            </div>
+            <div class="col-md-4 text-end">
+              <button class="btn btn-navigation btn-outline-primary me-2" (click)="nextPage()"
+                [disabled]="page === totalPages - 1">
+                Next <i class="bi bi-chevron-right"></i>
+              </button>
+              <button class="btn btn-success btn-submit" (click)="submitExam()">
+                <i class="bi bi-send-check"></i> Submit Exam
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Question Map Modal -->
+<div class="modal fade" id="questionMapModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-scrollable modal-sidebar">
+    <div class="modal-content border-0 rounded-0 h-100">
+      <!-- Modal Header -->
+      <div class="modal-header bg-primary text-white border-0">
+        <h5 class="modal-title mb-0">
+          <i class="bi bi-map me-2"></i>Question Navigation
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body bg-light">
+        <div class="question-map-container">
+          <p class="text-muted mb-3 small">
+            <i class="bi bi-info-circle me-1"></i>
+            Click on a question number to jump to it
+          </p>
+
+          <div class="question-categories">
+            <!-- Multiple Choice Section -->
+            <div *ngIf="groupedQuestionMap['MULTIPLE_CHOICE']" class="category-section mb-4">
+              <div class="category-header d-flex align-items-center mb-2">
+                <i class="bi bi-ui-checks text-primary me-2"></i>
+                <h6 class="category-title mb-0 fw-bold text-dark">
+                  Multiple Choice
+                  <small class="text-muted ms-1">
+                    ({{ groupedQuestionMap['MULTIPLE_CHOICE'].length }})
+                  </small>
+                </h6>
+              </div>
+              <div class="question-grid">
+                <button *ngFor="let q of groupedQuestionMap['MULTIPLE_CHOICE']" class="btn question-number-btn"
+                  [class.btn-success]="q.answered" [class.btn-outline-primary]="!q.answered"
+                  [class.current-question]="(page + 1) === q.number" (click)="jumpToPageOf(q)" data-bs-dismiss="modal">
+                  {{ q.number }}
+                  <span class="answered-check" *ngIf="q.answered">
+                    <i class="bi bi-check"></i>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Multiple Select Section -->
+            <div *ngIf="groupedQuestionMap['MULTIPLE_SELECT']" class="category-section mb-4">
+              <div class="category-header d-flex align-items-center mb-2">
+                <i class="bi bi-check2-square text-success me-2"></i>
+                <h6 class="category-title mb-0 fw-bold text-dark">
+                  Multiple Select
+                  <small class="text-muted ms-1">
+                    ({{ groupedQuestionMap['MULTIPLE_SELECT'].length }})
+                  </small>
+                </h6>
+              </div>
+              <div class="question-grid">
+                <button *ngFor="let q of groupedQuestionMap['MULTIPLE_SELECT']" class="btn question-number-btn"
+                  [class.btn-success]="q.answered" [class.btn-outline-success]="!q.answered"
+                  [class.current-question]="(page + 1) === q.number" (click)="jumpToPageOf(q)" data-bs-dismiss="modal">
+                  {{ q.number }}
+                  <span class="answered-check" *ngIf="q.answered">
+                    <i class="bi bi-check"></i>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <!-- True/False Section -->
+            <div *ngIf="groupedQuestionMap['TRUE_FALSE']" class="category-section mb-4">
+              <div class="category-header d-flex align-items-center mb-2">
+                <i class="bi bi-toggle-on text-warning me-2"></i>
+                <h6 class="category-title mb-0 fw-bold text-dark">
+                  True/False
+                  <small class="text-muted ms-1">
+                    ({{ groupedQuestionMap['TRUE_FALSE'].length }})
+                  </small>
+                </h6>
+              </div>
+              <div class="question-grid">
+                <button *ngFor="let q of groupedQuestionMap['TRUE_FALSE']" class="btn question-number-btn"
+                  [class.btn-success]="q.answered" [class.btn-outline-warning]="!q.answered"
+                  [class.current-question]="(page + 1) === q.number" (click)="jumpToPageOf(q)" data-bs-dismiss="modal">
+                  {{ q.number }}
+                  <span class="answered-check" *ngIf="q.answered">
+                    <i class="bi bi-check"></i>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Fill in Blank Section -->
+            <div *ngIf="groupedQuestionMap['FILL_IN_THE_BLANK']" class="category-section mb-4">
+              <div class="category-header d-flex align-items-center mb-2">
+                <i class="bi bi-input-cursor-text text-info me-2"></i>
+                <h6 class="category-title mb-0 fw-bold text-dark">
+                  Fill in Blank
+                  <small class="text-muted ms-1">
+                    ({{ groupedQuestionMap['FILL_IN_THE_BLANK'].length }})
+                  </small>
+                </h6>
+              </div>
+              <div class="question-grid">
+                <button *ngFor="let q of groupedQuestionMap['FILL_IN_THE_BLANK']" class="btn question-number-btn"
+                  [class.btn-success]="q.answered" [class.btn-outline-info]="!q.answered"
+                  [class.current-question]="(page + 1) === q.number" (click)="jumpToPageOf(q)" data-bs-dismiss="modal">
+                  {{ q.number }}
+                  <span class="answered-check" *ngIf="q.answered">
+                    <i class="bi bi-check"></i>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Essay Section -->
+            <div *ngIf="groupedQuestionMap['ESSAY']" class="category-section mb-4">
+              <div class="category-header d-flex align-items-center mb-2">
+                <i class="bi bi-file-text text-danger me-2"></i>
+                <h6 class="category-title mb-0 fw-bold text-dark">
+                  Essay Questions
+                  <small class="text-muted ms-1">
+                    ({{ groupedQuestionMap['ESSAY'].length }})
+                  </small>
+                </h6>
+              </div>
+              <div class="question-grid">
+                <button *ngFor="let q of groupedQuestionMap['ESSAY']" class="btn question-number-btn"
+                  [class.btn-success]="q.answered" [class.btn-outline-danger]="!q.answered"
+                  [class.current-question]="(page + 1) === q.number" (click)="jumpToPageOf(q)" data-bs-dismiss="modal">
+                  {{ q.number }}
+                  <span class="answered-check" *ngIf="q.answered">
+                    <i class="bi bi-check"></i>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Section -->
+          <div class="summary-section mt-4 pt-3 border-top">
+            <div class="row text-center">
+              <div class="col-6">
+                <div class="summary-item">
+                  <div class="summary-number text-primary fw-bold">
+                    {{ getTotalQuestions() }}
+                  </div>
+                  <div class="summary-label small text-muted">Total Questions</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="summary-item">
+                  <div class="summary-number text-success fw-bold">
+                    {{ getAnsweredCount() }}
+                  </div>
+                  <div class="summary-label small text-muted">Answered</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer bg-white border-top">
+        <div class="w-100">
+          <div class="progress mb-2" style="height: 6px;">
+            <div class="progress-bar bg-success" [style.width.%]="(getAnsweredCount() / getTotalQuestions()) * 100">
+            </div>
+          </div>
+          <small class="text-muted d-block text-center">
+            {{ getAnsweredCount() }} of {{ getTotalQuestions() }} questions answered
+          </small>
+        </div>
+        <button type="button" class="btn btn-secondary mt-2" data-bs-dismiss="modal">
+          <i class="bi bi-x-lg me-1"></i>Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Calculator Offcanvas -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="calculatorOffcanvas">
+  <div class="offcanvas-header sidebar-bg border-bottom border-light border-opacity-25">
+    <h5 class="offcanvas-title text-primary">
+      <i class="bi bi-calculator me-2"></i>Calculator
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body p-0">
+    <app-calculator></app-calculator>
+  </div>
+</div>

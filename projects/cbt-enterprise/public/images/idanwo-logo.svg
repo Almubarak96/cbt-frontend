@@ -1,0 +1,34 @@
+<svg width="180" height="40" viewBox="0 0 180 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#f8f9fa"/>
+      <stop offset="50%" stop-color="#e9ecef"/>
+      <stop offset="75%" stop-color="#dee2e6"/>
+      <stop offset="100%" stop-color="#ced4da"/>
+    </linearGradient>
+    <filter id="textGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Ìdánwò Text as SVG Paths -->
+  <g fill="url(#textGradient)" filter="url(#textGlow)" font-family="'Segoe UI', 'Inter', 'SF Pro Display', -apple-system, sans-serif" font-weight="700" font-size="24">
+    <!-- Ì -->
+    <path d="M10 28v-16h4v16h-4zm2-18v-2h-2v2h2z"/>
+    <!-- d -->
+    <path d="M26 12c0-6-4-10-8-10s-8 4-8 10 4 10 8 10 8-4 8-10zm-4 0c0 4-2 6-4 6s-4-2-4-6 2-6 4-6 4 2 4 6z"/>
+    <!-- á -->
+    <path d="M46 22c0-4-2-6-6-6s-6 2-6 6 2 6 6 6 6-2 6-6zm-4 0c0 2-2 2-2 2s-2 0-2-2 0-2 2-2 2 0 2 2zm-2-8l2-2 2 2h-4z"/>
+    <!-- n -->
+    <path d="M62 32v-20h4v12c0-2 2-4 4-4s4 2 4 4v12h4v-12c0-4-4-8-8-8s-8 4-8 8z"/>
+    <!-- w -->
+    <path d="M88 32v-12c0-2 2-4 4-4s4 2 4 4v12h4v-12c0-4-2-8-6-8s-6 4-8 8v-8h-4v20h4z"/>
+    <!-- ò -->
+    <path d="M120 12c0-6-4-10-8-10s-8 4-8 10 4 10 8 10 8-4 8-10zm-4 0c0 4-2 6-4 6s-4-2-4-6 2-6 4-6 4 2 4 6zm-6-12l2-2 2 2h-4z"/>
+  </g>
+</svg>

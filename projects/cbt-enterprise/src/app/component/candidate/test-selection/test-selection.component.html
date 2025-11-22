@@ -1,0 +1,29 @@
+<div class="container py-4">
+  <h3 class="fw-semibold text-dark mb-4">Your Enrolled Tests</h3>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div class="row g-3">
+    <div class="col-md-6 col-lg-4" *ngFor="let test of tests">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h5 class="card-title">{{ test.title }}</h5>
+          <p class="text-muted mb-2">Duration: {{ test.durationMinutes }} min</p>
+          <p class="text-muted">Questions: {{ test.numberOfQuestions }}</p>
+          <button class="btn btn-primary w-100" (click)="startTest(test.id)">
+            Start Test
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && tests.length === 0" class="text-center mt-5 text-muted">
+    No enrolled tests found.
+  </div>
+</div>
+

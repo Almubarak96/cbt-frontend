@@ -1,0 +1,49 @@
+// components/analytics-export-button.component.scss
+.export-button-container {
+  .btn-group {
+    .btn {
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      &.btn-success {
+        background: linear-gradient(135deg, #198754, #157347);
+        border: none;
+        
+        &:hover:not(:disabled) {
+          background: linear-gradient(135deg, #157347, #0f5132);
+        }
+      }
+    }
+
+    .dropdown-menu {
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      padding: 0.5rem;
+
+      .dropdown-item {
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+
+        &:hover {
+          background: #f8f9fa;
+          color: #198754;
+        }
+
+        i {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+}

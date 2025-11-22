@@ -1,0 +1,112 @@
+<div class="upload-container">
+  <!-- SUCCESS ALERT -->
+  <div *ngIf="showSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      <div class="flex-grow-1">
+        <strong>Success!</strong> {{ successMessage }}
+      </div>
+      <button type="button" class="btn-close" (click)="dismissAlert()"></button>
+    </div>
+  </div>
+
+  <!-- ERROR ALERT -->
+  <div *ngIf="showError" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <div class="flex-grow-1">
+        <strong>Error!</strong> {{ errorMessage }}
+      </div>
+      <button type="button" class="btn-close" (click)="dismissAlert()"></button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="upload-header">
+    <i class="bi bi-cloud-upload"></i>
+    <h4>Bulk Upload Questions</h4>
+    <p class="upload-subtitle">Upload multiple questions using CSV or Excel format</p>
+  </div>
+
+  <!-- Progress Bar -->
+  <div *ngIf="isUploading" class="upload-progress">
+    <div class="progress-container">
+      <div class="progress-bar" [style.width.%]="uploadProgress"></div>
+    </div>
+    <p class="progress-text">Uploading... {{ uploadProgress }}%</p>
+  </div>
+
+  <!-- Template Download Section -->
+  <div class="template-section">
+    <label class="section-label">Download Template</label>
+    <div class="template-controls">
+      <select class="form-select" [(ngModel)]="templateFormat">
+        <option value="csv">CSV (.csv)</option>
+        <option value="excel">Excel (.xlsx)</option>
+      </select>
+      <button class="btn btn-outline-primary" (click)="downloadTemplate()">
+        <i class="bi bi-download me-1"></i>Download
+      </button>
+    </div>
+  </div>
+
+  <!-- File Upload Section -->
+  <div class="upload-section">
+    <label class="section-label">Upload File</label>
+    
+    <!-- File Drop Zone -->
+    <div *ngIf="!isUploading"
+         class="file-drop-zone" 
+         [class.active]="isDragOver"
+         (drop)="onFileDrop($event)"
+         (dragover)="onDragOver($event)"
+         (dragleave)="onDragLeave($event)"
+         (click)="fileInput.click()">
+      
+      <div class="drop-zone-content" *ngIf="!selectedFile; else fileSelected">
+        <i class="bi bi-cloud-arrow-up"></i>
+        <p class="drop-text">Click to browse or drag & drop</p>
+        <small class="file-types">Supports .csv, .xlsx files (Max 5MB)</small>
+      </div>
+
+      <ng-template #fileSelected>
+        <div class="file-selected">
+          <i class="bi bi-file-earmark-check text-success"></i>
+          <div class="file-info">
+            <p class="file-name">{{ selectedFile?.name }}</p>
+            <small class="file-size">{{ getFileSize(selectedFile?.size) }}</small>
+          </div>
+          <button class="btn-remove" (click)="removeFile($event)" title="Remove file">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Hidden file input -->
+    <input #fileInput
+           type="file"
+           (change)="onFileSelected($event)"
+           accept=".csv,.xlsx"
+           class="d-none">
+  </div>
+
+  <!-- Upload Button -->
+  <div class="upload-actions">
+    <button class="btn btn-primary w-100" 
+            (click)="upload()" 
+            [disabled]="!selectedFile || !testId || isUploading"
+            [class.loading]="isUploading">
+      <i class="bi" [class.bi-upload]="!isUploading" [class.bi-arrow-repeat]="isUploading"></i>
+      {{ isUploading ? 'Uploading...' : 'Upload Questions' }}
+    </button>
+  </div>
+
+  <!-- Help Text -->
+  <div class="help-text">
+    <small class="text-muted">
+      <i class="bi bi-info-circle me-1"></i>
+      Ensure your file follows the template structure for successful upload
+    </small>
+  </div>
+</div>

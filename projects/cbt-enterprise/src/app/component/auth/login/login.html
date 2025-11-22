@@ -1,0 +1,76 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+        
+        <!-- Header Section -->
+        <div class="auth-header">
+          <div class="auth-icon">
+            <i class="bi bi-person-check"></i>
+          </div>
+          <h2 class="auth-title">Welcome Back</h2>
+          <p class="auth-subtitle">Sign in to your CBT Enterprise account</p>
+        </div>
+
+        <!-- Error Alert -->
+        <div *ngIf="error" class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {{ error }}
+        </div>
+
+        <!-- Form Fields -->
+        <div class="form-group">
+          <label for="username" class="form-label required">Email Address</label>
+          <input type="email" 
+                 class="form-control" 
+                 [class.is-invalid]="isFieldInvalid('username')"
+                 formControlName="username" 
+                 id="username"
+                 placeholder="Enter your email address">
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('username')">
+            {{ getFieldError('username') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label required">Password</label>
+          <input type="password" 
+                 class="form-control" 
+                 [class.is-invalid]="isFieldInvalid('password')"
+                 formControlName="password" 
+                 id="password"
+                 placeholder="Enter your password">
+          <div class="invalid-feedback" *ngIf="isFieldInvalid('password')">
+            {{ getFieldError('password') }}
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="auth-actions">
+          <button type="submit" 
+                  class="btn btn-primary" 
+                  [disabled]="form.invalid || loading">
+            <i class="bi" [class.bi-box-arrow-in-right]="!loading" [class.bi-arrow-repeat]="loading"></i>
+            {{ loading ? 'Signing In...' : 'Sign In' }}
+          </button>
+        </div>
+
+        <!-- Additional Links -->
+        <div class="auth-links">
+          <a routerLink="/auth/forgot-password" class="auth-link">
+            <i class="bi bi-key me-1"></i>
+            Forgot your password?
+          </a>
+        </div>
+
+        <!-- Demo Credentials Hint -->
+       <!--  <div class="demo-hint mt-4 p-3 bg-light rounded">
+          <small class="text-muted">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Demo Access:</strong> Use your registered email and password to sign in.
+          </small>
+        </div> -->
+      </form>
+    </div>
+  </div>
+</div>

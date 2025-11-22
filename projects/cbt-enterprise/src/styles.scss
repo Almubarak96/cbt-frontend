@@ -1,0 +1,27 @@
+/* You can add global styles to this file, and also import other style files */
+body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.form-root-background {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  // Use the SVG background from assets
+  background: url('/images/login-bg.svg') no-repeat center center;
+  background-size: cover;
+  position: relative;
+}
+
+// Optional overlay for readability
+.form-root-background::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.35); // light transparent overlay
+  backdrop-filter: blur(1px);
+  z-index: 0;
+}

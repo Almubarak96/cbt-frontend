@@ -1,0 +1,296 @@
+@import 'variables';
+
+// Define table border if not in variables
+$table-border: #e9ecef !default;
+
+
+
+// Progress Bar Styles
+.upload-progress {
+  text-align: center;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+
+  .progress-container {
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, $primary-color, lighten($primary-color, 10%));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    color: $secondary-color;
+    font-weight: $font-weight-semibold;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+}
+
+// Alert Styles (if not already added)
+.alert {
+  border: none;
+  border-radius: $border-radius-md;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid transparent;
+  
+  &.alert-success {
+    background: rgba(40, 167, 69, 0.1);
+    border-left-color: #28a745;
+    color: #155724;
+  }
+  
+  &.alert-danger {
+    background: rgba(220, 53, 69, 0.1);
+    border-left-color: #dc3545;
+    color: #721c24;
+  }
+  
+  .btn-close {
+    padding: 0.5rem;
+  }
+}
+
+
+// Keep all your existing beautiful styles exactly as they are
+// Your gradients, shadows, animations, etc. are perfect!
+
+.upload-container {
+  padding: 1.5rem;
+  background: white;
+  border-radius: $border-radius-lg;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.upload-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  
+  i {
+    font-size: 2.5rem;
+    color: $primary-color;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+  
+  h4 {
+    font-weight: $font-weight-semibold;
+    color: $dark-color;
+    margin-bottom: 0.5rem;
+  }
+  
+  .upload-subtitle {
+    color: $secondary-color;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+}
+
+.template-section, .upload-section {
+  margin-bottom: 1.5rem;
+  
+  .section-label {
+    font-weight: $font-weight-semibold;
+    color: $dark-color;
+    margin-bottom: 0.75rem;
+    display: block;
+    font-size: 0.9rem;
+  }
+}
+
+.template-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  
+  .form-select {
+    flex: 1;
+    border: 2px solid #e9ecef;
+    border-radius: $border-radius-sm;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+    }
+  }
+  
+  .btn-outline-primary {
+    border: 2px solid $primary-color;
+    color: $primary-color;
+    border-radius: $border-radius-sm;
+    padding: 0.5rem 1rem;
+    font-weight: $font-weight-semibold;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    
+    &:hover {
+      background: $primary-color;
+      color: white;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.file-drop-zone {
+  border: 2px dashed #e9ecef;
+  border-radius: $border-radius-md;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fafbfc;
+  position: relative;
+  
+  &:hover, &.active {
+    border-color: $primary-color;
+    background: rgba($primary-color, 0.05);
+    transform: translateY(-1px);
+  }
+  
+  &.active {
+    background: rgba($primary-color, 0.1);
+  }
+}
+
+.drop-zone-content {
+  i {
+    font-size: 2rem;
+    color: $secondary-color;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+  
+  .drop-text {
+    font-weight: $font-weight-semibold;
+    color: $dark-color;
+    margin-bottom: 0.5rem;
+  }
+  
+  .file-types {
+    color: $secondary-color;
+  }
+}
+
+.file-selected {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  
+  i {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  
+  .file-info {
+    flex: 1;
+    text-align: left;
+    
+    .file-name {
+      font-weight: $font-weight-semibold;
+      color: $dark-color;
+      margin: 0;
+      word-break: break-all;
+    }
+    
+    .file-size {
+      color: $secondary-color;
+    }
+  }
+  
+  .btn-remove {
+    background: none;
+    border: none;
+    color: $danger-color;
+    padding: 0.25rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    
+    &:hover {
+      background: rgba($danger-color, 0.1);
+      transform: scale(1.1);
+    }
+  }
+}
+
+.upload-actions {
+  margin-bottom: 1rem;
+  
+  .btn-primary {
+    background: $primary-gradient;
+    border: none;
+    border-radius: $border-radius-sm;
+    padding: 0.75rem 1.5rem;
+    font-weight: $font-weight-semibold;
+    transition: all 0.3s ease;
+    
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    &.loading {
+      .bi-arrow-repeat {
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+}
+
+.help-text {
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+// Loading animation
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive design
+@media (max-width: 576px) {
+  .upload-container {
+    padding: 1rem;
+  }
+  
+  .template-controls {
+    flex-direction: column;
+    
+    .form-select, .btn-outline-primary {
+      width: 100%;
+    }
+  }
+  
+  .file-selected {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+    
+    .file-info {
+      text-align: center;
+    }
+  }
+}

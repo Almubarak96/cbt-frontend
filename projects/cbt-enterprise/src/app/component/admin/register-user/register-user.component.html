@@ -1,0 +1,48 @@
+<div class="register-root">
+    <div class="form-card">
+        <h2 class="title">Register Examiner / Proctor</h2>
+        <p class="subtitle">Admins can create examiner and proctor accounts.</p>
+
+        <form [formGroup]="registerUserForm" (ngSubmit)="submit()">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" formControlName="username" placeholder="Enter username" class="form-control form-control-lg" />
+                <div class="error"
+                    *ngIf="registerUserForm.get('username')?.touched && registerUserForm.get('username')?.invalid">
+                    Username is required (min 3 characters).
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" formControlName="email" placeholder="Enter email" class="form-control form-control-lg"/>
+                <div class="error"
+                    *ngIf="registerUserForm.get('email')?.touched && registerUserForm.get('email')?.invalid">
+                    A valid email is required.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" formControlName="password" placeholder="Enter password" class="form-control form-control-lg"/>
+                <div class="error"
+                    *ngIf="registerUserForm.get('password')?.touched && registerUserForm.get('pasword')?.invalid">
+                    Password must be at least 6 characters.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Role</label>
+                <select formControlName="role"  class="form-select">
+                    <option value="EXAMINER">Examiner</option>
+                    <option value="PROCTOR">Proctor</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary large" [disabled]="registerUserForm.invalid">
+                Register
+            </button>
+        </form>
+    </div>
+</div>

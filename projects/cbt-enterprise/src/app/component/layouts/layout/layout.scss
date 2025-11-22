@@ -1,0 +1,272 @@
+// Variables
+$sidebar-width: 280px;
+$sidebar-collapsed-width: 80px;
+$navbar-height: 56px;
+$primary-color: #6366f1;
+$primary-light: #8b5cf6;
+$primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+//$primary-gradient: linear-gradient(135deg, $primary-color 0%, $primary-light 100%);
+
+.bg-pry{
+  background-color: $primary-color;
+}
+// Layout wrapper
+.layout-wrapper {
+  padding-top: $navbar-height;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+// Main layout container
+.main-layout-container {
+  display: flex;
+  min-height: calc(100vh - #{$navbar-height});
+}
+
+// Navbar enhancements
+.navbar {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1030;
+  
+  .navbar-brand {
+    font-size: 1.25rem;
+    
+    i {
+      font-size: 1.5rem;
+    }
+  }
+  
+  .dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+}
+
+// Desktop Sidebar
+.desktop-sidebar {
+  background: $primary-gradient;
+  width: $sidebar-width;
+  min-height: calc(100vh - #{$navbar-height});
+  position: fixed;
+  left: 0;
+  top: $navbar-height;
+  z-index: 1010;
+  transition: width 0.3s ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  &.sidebar-collapsed {
+    width: $sidebar-collapsed-width;
+    
+    .sidebar-header {
+      padding: 1rem 0.5rem;
+      text-align: center;
+      
+      .btn-link {
+        margin: 0 auto;
+      }
+    }
+  }
+}
+
+// Mobile Offcanvas Sidebar
+.offcanvas.sidebar-bg {
+  background: $primary-gradient;
+  width: $sidebar-width;
+}
+
+// Sidebar header
+.sidebar-header {
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding: 1rem 1.25rem;
+  
+  h5 {
+    font-weight: 600;
+  }
+}
+
+// Sidebar navigation
+.nav-link {
+  display: flex;
+  align-items: center;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 0.25rem;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  
+  i {
+    font-size: 1.1rem;
+    width: 24px;
+    margin-right: 0.75rem;
+    transition: margin 0.3s ease;
+  }
+  
+  .sidebar-label {
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+  }
+  
+  // Badge positioning
+  .badge {
+    top: 50%;
+    right: 1rem;
+    font-size: 0.65rem;
+    padding: 0.25rem 0.4rem;
+  }
+  
+  // Active indicator
+  .active-indicator {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(255,255,255,0.5);
+  }
+  
+  // Hover state
+  &:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.15);
+    transform: translateX(4px);
+  }
+  
+  // Active state
+  &.active {
+    color: #fff;
+    background: rgba(255,255,255,0.2);
+    font-weight: 600;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #fff;
+      border-radius: 0 2px 2px 0;
+    }
+  }
+  
+  // Collapsed state
+  &.sidebar-link-collapsed {
+    justify-content: center;
+    padding: 0.75rem;
+    
+    i {
+      margin-right: 0;
+    }
+    
+    .badge {
+      right: 0.5rem;
+      transform: translate(50%, -50%);
+    }
+  }
+}
+
+// Main content area
+.main-content {
+  flex: 1;
+  min-height: calc(100vh - #{$navbar-height});
+  transition: margin-left 0.3s ease;
+  
+  &.sidebar-expanded {
+    margin-left: $sidebar-width;
+  }
+  
+  &.sidebar-collapsed {
+    margin-left: $sidebar-collapsed-width;
+  }
+  
+  .content-container {
+    padding: 1.5rem 2rem;
+    min-height: 100%;
+  }
+}
+
+// Sidebar footer
+.sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.1);
+}
+
+// Mobile optimizations
+@media (max-width: 767.98px) {
+  .layout-wrapper {
+    padding-top: $navbar-height;
+  }
+  
+  .desktop-sidebar {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+    width: 100%;
+    
+    .content-container {
+      padding: 1rem;
+    }
+  }
+  
+  .offcanvas-start {
+    width: $sidebar-width;
+  }
+}
+
+// Tablet optimizations
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .desktop-sidebar {
+    width: 240px;
+    
+    &.sidebar-collapsed {
+      width: $sidebar-collapsed-width;
+    }
+  }
+  
+  .main-content.sidebar-expanded {
+    margin-left: 240px;
+  }
+}
+
+// Focus states for accessibility
+.nav-link:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+// Smooth scrolling
+html {
+  scroll-behavior: smooth;
+}
+
+.cursor{
+  cursor: pointer;
+}
+
+// Loading animation for route changes
+router-outlet + * {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

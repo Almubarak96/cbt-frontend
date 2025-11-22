@@ -1,0 +1,410 @@
+<div class="container">
+
+
+<div class="exam-results-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-section">
+    <div class="d-flex justify-content-center align-items-center min-vh-50">
+      <div class="text-center">
+        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+          <span class="visually-hidden">Loading results...</span>
+        </div>
+        <h4 class="text-muted">Processing Your Results</h4>
+        <p class="text-muted">Please wait while we generate your detailed performance report...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-section">
+    <div class="d-flex justify-content-center align-items-center min-vh-50">
+      <div class="text-center">
+        <div class="error-icon mb-4">
+          <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 4rem;"></i>
+        </div>
+        <h3 class="text-danger mb-3">Unable to Load Results</h3>
+        <p class="text-muted mb-4">{{ error }}</p>
+        <button class="btn btn-primary btn-lg" (click)="loadExamResults()">
+          <i class="bi bi-arrow-clockwise me-2"></i>Try Again
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Content -->
+  <div *ngIf="examResult && !loading" class="results-content">
+    <!-- Header Section -->
+    <div class="results-header bg-gradient-primary text-white rounded-3 shadow-sm mb-4">
+      <div class="row align-items-center py-4">
+        <div class="col-lg-8">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-clipboard-check me-3" style="font-size: 2rem;"></i>
+            <div>
+              <h1 class="h2 mb-1 fw-bold">{{ examResult.examName }}</h1>
+              <p class="mb-0 opacity-75">Exam Results Summary</p>
+            </div>
+          </div>
+          <div class="row g-3">
+            <div class="col-sm-6 col-md-4">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-calendar me-2 opacity-75"></i>
+                <small>{{ examResult.completedAt | date:'fullDate' }}</small>
+              </div>
+            </div>
+            <div class="col-sm-6 col-md-4">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-clock me-2 opacity-75"></i>
+                <small>Duration: {{ examResult.timeSpent }}</small>
+              </div>
+            </div>
+            <div class="col-sm-6 col-md-4">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-person me-2 opacity-75"></i>
+                <small>{{ examResult.studentName }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
+          <div class="score-display">
+            <div class="percentage-circle mx-auto mx-lg-0 mb-2" [ngClass]="getScoreColor(examResult.percentage)">
+              <span class="percentage-value">{{ examResult.percentage }}%</span>
+            </div>
+            <div [ngClass]="getStatusClass(examResult.status)" class="status-badge mb-2">
+              <i class="bi" [class]="examResult.status === 'PASS' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+              {{ examResult.status }}
+            </div>
+            <div class="score-details">
+              <small class="opacity-75">
+                {{ examResult.totalScore }}/{{ examResult.maxPossibleScore }} points • 
+                Pass: {{ examResult.passingScore }}%
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-3">
+        <div class="card metric-card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="metric-icon bg-primary bg-opacity-10 text-primary rounded-circle mx-auto mb-3">
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <h3 class="metric-value text-primary fw-bold">{{ examResult.totalScore }}</h3>
+            <p class="metric-label text-muted mb-0">Points Earned</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card metric-card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="metric-icon bg-info bg-opacity-10 text-info rounded-circle mx-auto mb-3">
+              <i class="bi bi-graph-up"></i>
+            </div>
+            <h3 class="metric-value text-info fw-bold">{{ examResult.maxPossibleScore }}</h3>
+            <p class="metric-label text-muted mb-0">Total Points</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card metric-card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="metric-icon" [ngClass]="getScoreColorClass(examResult.percentage) + ' rounded-circle mx-auto mb-3'">
+              <i class="bi bi-percent"></i>
+            </div>
+            <h3 class="metric-value fw-bold" [ngClass]="getScoreColor(examResult.percentage)">{{ examResult.percentage }}%</h3>
+            <p class="metric-label text-muted mb-0">Final Score</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card metric-card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="metric-icon" [ngClass]="examResult.status === 'PASS' ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger' + ' rounded-circle mx-auto mb-3'">
+              <i class="bi" [class]="examResult.status === 'PASS' ? 'bi-trophy-fill' : 'bi-arrow-repeat'"></i>
+            </div>
+            <h3 class="metric-value fw-bold" [ngClass]="examResult.status === 'PASS' ? 'text-success' : 'text-danger'">{{ examResult.status }}</h3>
+            <p class="metric-label text-muted mb-0">Final Result</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Analytics -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-transparent border-0 py-3">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-bar-chart-fill text-primary me-2"></i>
+              Performance Distribution
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="distribution-chart">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Question Performance</span>
+                <span class="text-muted">{{ correctAnswers }}/{{ totalQuestions }} correct</span>
+              </div>
+              <div class="progress distribution-progress mb-3">
+                <div class="progress-bar bg-success" 
+                     [style.width]="(correctAnswers / totalQuestions) * 100 + '%'"
+                     data-bs-toggle="tooltip" 
+                     [attr.title]="'Correct: ' + correctAnswers + ' questions'">
+                  <span class="progress-text">Correct {{ correctAnswers }}</span>
+                </div>
+                <div class="progress-bar bg-warning" 
+                     [style.width]="(incorrectAnswers / totalQuestions) * 100 + '%'"
+                     data-bs-toggle="tooltip" 
+                     [attr.title]="'Incorrect: ' + incorrectAnswers + ' questions'">
+                  <span class="progress-text">Incorrect {{ incorrectAnswers }}</span>
+                </div>
+                <div class="progress-bar bg-secondary" 
+                     [style.width]="(unansweredQuestions / totalQuestions) * 100 + '%'"
+                     data-bs-toggle="tooltip" 
+                     [attr.title]="'Unanswered: ' + unansweredQuestions + ' questions'">
+                  <span class="progress-text">Unanswered {{ unansweredQuestions }}</span>
+                </div>
+              </div>
+              <div class="row text-center">
+                <div class="col-4">
+                  <div class="stat-item">
+                    <div class="stat-value text-success fw-bold">{{ correctAnswers }}</div>
+                    <div class="stat-label text-muted">Correct</div>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="stat-item">
+                    <div class="stat-value text-warning fw-bold">{{ incorrectAnswers }}</div>
+                    <div class="stat-label text-muted">Incorrect</div>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="stat-item">
+                    <div class="stat-value text-secondary fw-bold">{{ unansweredQuestions }}</div>
+                    <div class="stat-label text-muted">Unanswered</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-transparent border-0 py-3">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-speedometer2 text-primary me-2"></i>
+              Performance Metrics
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="metrics-list">
+              <div class="metric-item d-flex justify-content-between align-items-center py-2 border-bottom">
+                <span class="metric-name">Accuracy Rate</span>
+                <span class="metric-value badge bg-primary">
+                  {{ totalQuestions > 0 ? ((correctAnswers / totalQuestions) * 100).toFixed(1) : 0 }}%
+                </span>
+              </div>
+              <div class="metric-item d-flex justify-content-between align-items-center py-2 border-bottom">
+                <span class="metric-name">Completion</span>
+                <span class="metric-value badge bg-success">
+                  {{ totalQuestions > 0 ? (((correctAnswers + incorrectAnswers) / totalQuestions) * 100).toFixed(1) : 0 }}%
+                </span>
+              </div>
+              <div class="metric-item d-flex justify-content-between align-items-center py-2 border-bottom">
+                <span class="metric-name">Time Efficiency</span>
+                <span class="metric-value badge bg-info">Good</span>
+              </div>
+              <div class="metric-item d-flex justify-content-between align-items-center py-2">
+                <span class="metric-name">Overall Performance</span>
+                <span class="metric-value badge" [ngClass]="getPerformanceBadgeClass(examResult.percentage)">
+                  {{ getPerformanceLevel(examResult.percentage) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Breakdown -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+          <i class="bi bi-list-check text-primary me-2"></i>
+          Detailed Question Analysis
+        </h5>
+        <span class="badge bg-light text-dark">{{ totalQuestions }} Questions</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" class="ps-4">#</th>
+                <th scope="col">Question</th>
+                <th scope="col" class="text-center">Type</th>
+                <th scope="col" class="text-center">Your Answer</th>
+                <th scope="col" class="text-center">Correct Answer</th>
+                <th scope="col" class="text-center">Score</th>
+                <th scope="col" class="text-center pe-4">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let question of examResult.questionResults; let i = index" 
+                  class="question-row" [ngClass]="question.isCorrect ? 'table-success' : 'table-danger'">
+                <td class="fw-bold ps-4">{{ i + 1 }}</td>
+                <td>
+                  <div class="question-text">{{ question.questionText }}</div>
+                </td>
+                <td class="text-center">
+                  <span class="badge" [ngClass]="getQuestionTypeClass(question.questionType)">
+                    {{ formatQuestionType(question.questionType) }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="answer-text" [ngClass]="question.isCorrect ? 'text-success fw-bold' : 'text-danger'">
+                    {{ question.studentAnswer || 'Not answered' }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="text-success fw-bold">{{ question.correctAnswer }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="score-badge" [ngClass]="question.isCorrect ? 'bg-success' : 'bg-danger'">
+                    {{ question.score }}/{{ question.maxMarks }}
+                  </span>
+                </td>
+                <td class="text-center pe-4">
+                  <span class="status-badge" [ngClass]="question.isCorrect ? 'bg-success' : 'bg-danger'">
+                    <i class="bi" [class]="question.isCorrect ? 'bi-check-lg' : 'bi-x-lg'"></i>
+                    {{ question.isCorrect ? 'Correct' : 'Incorrect' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback & Recommendations -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-transparent border-0 py-3">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-lightbulb text-warning me-2"></i>
+              Performance Insights & Recommendations
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="feedback-content" [ngClass]="examResult.status === 'PASS' ? 'border-success' : 'border-warning'">
+              <div class="d-flex">
+                <div class="flex-shrink-0">
+                  <i class="bi" [class]="examResult.status === 'PASS' ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning'" 
+                     style="font-size: 2rem;"></i>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                  <h5 [ngClass]="examResult.status === 'PASS' ? 'text-success' : 'text-warning'">
+                    {{ examResult.status === 'PASS' ? 'Outstanding Achievement!' : 'Opportunities for Improvement' }}
+                  </h5>
+                  <p class="mb-3">
+                    You scored <strong>{{ examResult.percentage }}%</strong> which is 
+                    <strong>{{ examResult.status === 'PASS' ? 'above' : 'below' }}</strong> 
+                    the passing requirement of <strong>{{ examResult.passingScore }}%</strong>.
+                  </p>
+                  
+                  <div class="improvement-areas" *ngIf="identifyWeakAreas().length > 0">
+                    <h6 class="mb-2">Focus Areas:</h6>
+                    <ul class="list-unstyled">
+                      <li *ngFor="let weakArea of identifyWeakAreas()" class="mb-1">
+                        <i class="bi bi-arrow-right-short text-primary me-1"></i>
+                        {{ weakArea }}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header bg-transparent border-0 py-3">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-activity text-primary me-2"></i>
+              Next Steps
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="next-steps">
+              <div class="step-item d-flex align-items-center mb-3">
+                <div class="step-icon bg-primary bg-opacity-10 text-primary rounded-circle me-3">
+                  <i class="bi bi-clipboard-data"></i>
+                </div>
+                <div>
+                  <h6 class="mb-1">Review Performance</h6>
+                  <p class="text-muted mb-0 small">Analyze incorrect answers</p>
+                </div>
+              </div>
+              <div class="step-item d-flex align-items-center mb-3">
+                <div class="step-icon bg-success bg-opacity-10 text-success rounded-circle me-3">
+                  <i class="bi bi-journal-text"></i>
+                </div>
+                <div>
+                  <h6 class="mb-1">Study Materials</h6>
+                  <p class="text-muted mb-0 small">Access learning resources</p>
+                </div>
+              </div>
+              <div class="step-item d-flex align-items-center" *ngIf="examResult.status === 'FAIL'">
+                <div class="step-icon bg-warning bg-opacity-10 text-warning rounded-circle me-3">
+                  <i class="bi bi-arrow-repeat"></i>
+                </div>
+                <div>
+                  <h6 class="mb-1">Retake Exam</h6>
+                  <p class="text-muted mb-0 small">Available after review</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Section -->
+    <div class="action-section">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body py-4">
+          <div class="row align-items-center">
+            <div class="col-md-6 mb-3 mb-md-0">
+              <h6 class="mb-1">Ready for your next steps?</h6>
+              <p class="text-muted mb-0 small">Download your results or return to your dashboard</p>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                <button class="btn btn-outline-primary" (click)="backToDashboard()">
+                  <i class="bi bi-house me-2"></i>Back to Dashboard
+                </button>
+                <button class="btn btn-outline-secondary" (click)="downloadResults()">
+                  <i class="bi bi-download me-2"></i>Download PDF
+                </button>
+                <button class="btn btn-primary" (click)="retakeExam()" *ngIf="examResult.status === 'FAIL'">
+                  <i class="bi bi-arrow-repeat me-2"></i>Retake Exam
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</div>

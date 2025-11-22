@@ -1,0 +1,371 @@
+<div class="form-container">
+  <div class="form-card">
+    <div class="card-body">
+      <form [formGroup]="testForm" (ngSubmit)="saveTest()" class="form-unified">
+        
+        <!-- Header Section -->
+        <div class="form-header">
+          <div class="form-icon">
+            <i class="bi bi-clipboard2-check"></i>
+          </div>
+          <h2 class="form-title">{{ isEdit ? 'Edit Test' : 'Create New Test' }}</h2>
+          <p class="form-subtitle">
+            {{ isEdit ? 'Update your test details below.' : 'Fill in the details to create a new test.' }}
+          </p>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+          <div class="step-indicator">
+            <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+              <div class="step-number">1</div>
+              <span class="step-label">Basic Info</span>
+            </div>
+            <div class="step-connector" [class.completed]="currentStep > 1"></div>
+            <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+              <div class="step-number">2</div>
+              <span class="step-label">Configuration</span>
+            </div>
+            <div class="step-connector" [class.completed]="currentStep > 2"></div>
+            <div class="step" [class.active]="currentStep === 3">
+              <div class="step-number">3</div>
+              <span class="step-label">Test Window</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Alert -->
+        <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {{ error }}
+          <button type="button" class="btn-close" (click)="error = null"></button>
+        </div>
+
+        <!-- Step 1: Basic Information -->
+        <div *ngIf="currentStep === 1" class="form-step">
+          <div class="form-section">
+            <h5 class="section-title">
+              <i class="bi bi-info-circle me-2"></i>
+              Basic Information
+            </h5>
+            
+            <div class="row">
+              <div class="col-12 mb-3">
+                <label class="form-label required">Test Title</label>
+                <input type="text" 
+                       class="form-control" 
+                       [class.is-invalid]="isFieldInvalid('title')"
+                       formControlName="title"
+                       placeholder="Enter test title">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('title')">
+                  {{ getFieldError('title') }}
+                </div>
+              </div>
+
+              <div class="col-12 mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" 
+                          rows="4" 
+                          formControlName="description"
+                          placeholder="Enter test description"></textarea>
+                <small class="form-text text-muted">
+                  Provide clear Description of the test, just an information
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Test Configuration -->
+        <div *ngIf="currentStep === 2" class="form-step">
+          <div class="form-section">
+            <h5 class="section-title">
+              <i class="bi bi-gear me-2"></i>
+              Test Configuration
+            </h5>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label required">Duration (minutes)</label>
+                <input type="number" 
+                       class="form-control" 
+                       [class.is-invalid]="isFieldInvalid('durationMinutes')"
+                       formControlName="durationMinutes"
+                       appOnlyNumeric
+                       min="1">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('durationMinutes')">
+                  {{ getFieldError('durationMinutes') }}
+                </div>
+                <small class="form-text text-muted">
+                  Total time allowed for completing the test
+                </small>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Number of Questions</label>
+                <input type="number" 
+                       class="form-control" 
+                       [class.is-invalid]="isFieldInvalid('numberOfQuestions')"
+                       formControlName="numberOfQuestions"
+                       appOnlyNumeric
+                       min="1"
+                       placeholder="Optional">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('numberOfQuestions')">
+                  {{ getFieldError('numberOfQuestions') }}
+                </div>
+                <small class="form-text text-muted">
+                  Leave empty to use all available questions
+                </small>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label required">Total Marks</label>
+                <input type="number" 
+                       class="form-control" 
+                       [class.is-invalid]="isFieldInvalid('totalMarks')"
+                       formControlName="totalMarks"
+                       appOnlyNumeric
+                       min="1">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('totalMarks')">
+                  {{ getFieldError('totalMarks') }}
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Passing Score</label>
+                <input type="number" 
+                       class="form-control" 
+                       [class.is-invalid]="isFieldInvalid('passingScore')"
+                       formControlName="passingScore"
+                       appOnlyNumeric
+                       min="0"
+                       placeholder="Optional">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('passingScore')">
+                  {{ getFieldError('passingScore') }}
+                </div>
+                <small class="form-text text-muted">
+                  Minimum score required to pass (absolute value)
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings Section -->
+          <div class="form-section">
+            <h5 class="section-title">
+              <i class="bi bi-shuffle me-2"></i>
+              Test Settings
+            </h5>
+            
+            <div class="settings-grid">
+              <div class="form-check setting-item">
+                <input type="checkbox" 
+                       class="form-check-input" 
+                       formControlName="randomizeQuestions"
+                       id="randomizeQuestions">
+                <label class="form-check-label" for="randomizeQuestions">
+                  <i class="bi bi-shuffle me-2"></i>
+                  Randomize Questions
+                </label>
+                <small class="form-text text-muted">Present questions in random order for each attempt</small>
+              </div>
+
+              <div class="form-check setting-item">
+                <input type="checkbox" 
+                       class="form-check-input" 
+                       formControlName="shuffleChoices"
+                       id="shuffleChoices">
+                <label class="form-check-label" for="shuffleChoices">
+                  <i class="bi bi-arrow-left-right me-2"></i>
+                  Shuffle Choices
+                </label>
+                <small class="form-text text-muted">Randomize answer choices for multiple choice questions</small>
+              </div>
+
+              <div class="form-check setting-item">
+                <input type="checkbox" 
+                       class="form-check-input" 
+                       formControlName="published"
+                       id="published">
+                <label class="form-check-label" for="published">
+                  <i class="bi bi-globe me-2"></i>
+                  Publish Test
+                </label>
+                <small class="form-text text-muted">Make this test available to students</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Test Window Configuration -->
+        <div *ngIf="currentStep === 3" class="form-step">
+          <div class="form-section">
+            <h5 class="section-title">
+              <i class="bi bi-calendar-range me-2"></i>
+              Test Window & Access Control
+            </h5>
+            
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              Configure when and how students can access this test. Leave fields empty for immediate, unrestricted access.
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Scheduled Start Time</label>
+                <input type="datetime-local" 
+                       class="form-control" 
+                       formControlName="scheduledStartTime">
+                <small class="form-text text-muted">
+                  When the test becomes available to students
+                </small>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Scheduled End Time</label>
+                <input type="datetime-local" 
+                       class="form-control" 
+                       formControlName="scheduledEndTime">
+                <small class="form-text text-muted">
+                  When the test becomes unavailable to students
+                </small>
+              </div>
+
+              <div class="col-12 mb-3" *ngIf="isTestWindowEnabled">
+                <div class="schedule-preview">
+                  <h6>Schedule Preview</h6>
+                  <div class="preview-status">
+                    <span class="status-badge" [ngClass]="calculatedStatus.toLowerCase()">
+                      {{ calculatedStatus }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Time Enforcement</label>
+                <select class="form-select" formControlName="timeEnforcement">
+                  <option *ngFor="let option of timeEnforcementOptions" [value]="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+                <small class="form-text text-muted" *ngFor="let option of timeEnforcementOptions"
+                       [class.d-block]="option.value === testForm.get('timeEnforcement')?.value">
+                  {{ option.description }}
+                </small>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Maximum Attempts</label>
+                <input type="number" 
+                       class="form-control" 
+                       formControlName="maxAttempts"
+                       appOnlyNumeric
+                       min="1"
+                       placeholder="Unlimited">
+                <small class="form-text text-muted">
+                  Leave empty for unlimited attempts
+                </small>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Start Buffer (minutes)</label>
+                <input type="number" 
+                       class="form-control" 
+                       formControlName="startBufferMinutes"
+                       appOnlyNumeric
+                       min="0">
+                <small class="form-text text-muted">
+                  Allow students to join this many minutes before scheduled start
+                </small>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">End Buffer (minutes)</label>
+                <input type="number" 
+                       class="form-control" 
+                       formControlName="endBufferMinutes"
+                       appOnlyNumeric
+                       min="0">
+                <small class="form-text text-muted">
+                  Allow submissions this many minutes after scheduled end
+                </small>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12 mb-3">
+                <label class="form-label">Allowed IP Addresses</label>
+                <input type="text" 
+                       class="form-control" 
+                       formControlName="allowedIPs"
+                       placeholder="192.168.1.1, 10.0.0.0/24">
+                <small class="form-text text-muted">
+                  Comma-separated IP addresses or ranges. Leave empty for any IP.
+                </small>
+              </div>
+
+              <div class="col-12 mb-3">
+                <div class="form-check setting-item">
+                  <input type="checkbox" 
+                         class="form-check-input" 
+                         formControlName="secureBrowser"
+                         id="secureBrowser">
+                  <label class="form-check-label" for="secureBrowser">
+                    <i class="bi bi-shield-lock me-2"></i>
+                    Require Secure Browser
+                  </label>
+                  <small class="form-text text-muted">
+                    Restrict test to secure browser environment (disables developer tools, right-click, etc.)
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <div class="step-navigation" *ngIf="currentStep > 1">
+            <button type="button" 
+                    class="btn btn-outline-secondary" 
+                    (click)="previousStep()">
+              <i class="bi bi-arrow-left me-2"></i>
+              Previous
+            </button>
+          </div>
+
+          <div class="main-actions">
+            <button type="button" 
+                    class="btn btn-outline-secondary" 
+                    (click)="router.navigate(['/examiner/tests'])">
+              <i class="bi bi-x-lg me-2"></i>
+              Cancel
+            </button>
+
+            <button type="button" 
+                    class="btn btn-outline-primary" 
+                    *ngIf="currentStep < totalSteps"
+                    (click)="nextStep()"
+                    [disabled]="currentStep === 1 && testForm.get('title')?.invalid">
+              Next
+              <i class="bi bi-arrow-right ms-2"></i>
+            </button>
+
+            <button type="submit" 
+                    class="btn btn-primary" 
+                    *ngIf="currentStep === totalSteps"
+                    [disabled]="testForm.invalid || isLoading">
+              <i class="bi" [class.bi-check-lg]="!isLoading" [class.bi-arrow-repeat]="isLoading"></i>
+              {{ isLoading ? 'Saving...' : (isEdit ? 'Update Test' : 'Create Test') }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

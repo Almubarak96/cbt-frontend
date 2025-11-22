@@ -1,0 +1,12 @@
+<div class="proctoring-container shadow-sm rounded">
+  <div class="loading" *ngIf="loadingModel">
+    <i class="bi bi-hourglass-split"></i> Initializing camera & model...
+  </div>
+
+  <video #video autoplay muted playsinline class="camera-feed"></video>
+  <canvas #overlay class="overlay-canvas"></canvas>
+
+  <div class="face-status" [class.detected]="faceDetected">
+    <i class="bi" [ngClass]="faceDetected ? 'bi-person-check-fill' : 'bi-person-x'"></i>
+  </div>
+</div>

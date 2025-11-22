@@ -1,0 +1,351 @@
+<!-- result.component.html -->
+<div class="container-fluid py-4" [class.print-mode]="isPrinting">
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading results...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error && !loading" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <strong>Error!</strong> {{ error }}
+    <button type="button" class="btn-close" (click)="error = ''"></button>
+  </div>
+
+  <!-- Student View -->
+  <div *ngIf="isStudent && !selectedStudentResult && !loading" class="student-results">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="text-primary">
+        <i class="bi bi-card-checklist me-2"></i>My Exam Results
+      </h2>
+      <button *ngIf="studentResults.length > 0" class="btn btn-outline-primary" (click)="printResult()">
+        <i class="bi bi-printer me-1"></i>Print All Results
+      </button>
+    </div>
+
+    <div *ngIf="studentResults.length === 0 && !loading" class="text-center py-5">
+      <div class="empty-state">
+        <i class="bi bi-inbox display-1 text-muted"></i>
+        <h4 class="text-muted mt-3">No Results Available</h4>
+        <p class="text-muted">You haven't completed any exams yet or results are not available.</p>
+      </div>
+    </div>
+
+    <!-- Student results cards would go here -->
+    <!-- Note: You'll need to implement a dedicated endpoint for student's own results -->
+  </div>
+
+  <!-- Examiner View -->
+  <div *ngIf="isExaminer && !selectedStudentResult && !loading" class="examiner-results">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="text-primary">
+        <i class="bi bi-graph-up me-2"></i>Test Results Dashboard
+      </h2>
+    </div>
+
+    <!-- Test Summaries -->
+    <div class="row g-4 mb-5">
+      <div *ngFor="let summary of testSummaries" class="col-md-6 col-xl-4">
+        <div class="card test-summary-card h-100 shadow-sm">
+          <div class="card-header" [class.bg-primary]="summary.published" [class.bg-secondary]="!summary.published" class="text-white">
+            <h6 class="mb-0 text-truncate">{{ summary.testTitle }}</h6>
+            <small class="opacity-75">
+              {{ summary.published ? 'Published' : 'Draft' }}
+            </small>
+          </div>
+          <div class="card-body">
+            <div class="stats-grid">
+              <div class="stat-item text-center">
+                <div class="stat-value text-primary">{{ summary.totalStudents }}</div>
+                <div class="stat-label">Total Students</div>
+              </div>
+              <div class="stat-item text-center">
+                <div class="stat-value text-success">{{ summary.completedStudents }}</div>
+                <div class="stat-label">Completed</div>
+              </div>
+              <div class="stat-item text-center">
+                <div class="stat-value text-info">{{ summary.averageScore | number:'1.1-1' }}%</div>
+                <div class="stat-label">Avg Score</div>
+              </div>
+              <div class="stat-item text-center">
+                <div class="stat-value" [class.text-success]="summary.passRate >= 50" [class.text-warning]="summary.passRate < 50">
+                  {{ summary.passRate | number:'1.1-1' }}%
+                </div>
+                <div class="stat-label">Pass Rate</div>
+              </div>
+            </div>
+            
+            <div class="test-meta mt-3">
+              <small class="text-muted">
+                <i class="bi bi-clock me-1"></i>{{ summary.durationMinutes }} mins • 
+                <i class="bi bi-check-circle me-1 ms-2"></i>{{ summary.passingScore }}% to pass
+              </small>
+            </div>
+          </div>
+          <div class="card-footer bg-transparent">
+            <button class="btn btn-outline-primary btn-sm w-100" 
+                    (click)="loadStudentResultsForTest(summary.testId)">
+              View Student Results
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination for Test Summaries -->
+    <div *ngIf="testSummaries.length > 0 && !selectedTestId" class="d-flex justify-content-between align-items-center">
+      <div class="text-muted">
+        Showing {{ testSummaries.length }} of {{ totalElements }} tests
+      </div>
+      <nav>
+        <ul class="pagination">
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" (click)="onPageChange(currentPage - 1)" href="javascript:void(0)">Previous</a>
+          </li>
+          <li class="page-item" [class.active]="i === currentPage" *ngFor="let i of [].constructor(totalPages); let index = index">
+            <a class="page-link" (click)="onPageChange(index)" href="javascript:void(0)">{{ index + 1 }}</a>
+          </li>
+          <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+            <a class="page-link" (click)="onPageChange(currentPage + 1)" href="javascript:void(0)">Next</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Student Results for Selected Test -->
+    <div *ngIf="selectedTestId" class="student-results-table">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h4 class="text-secondary mb-1">Student Results</h4>
+          <button class="btn btn-link p-0 text-muted" (click)="selectedTestId = null">
+            <i class="bi bi-arrow-left me-1"></i>Back to Tests
+          </button>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-outline-success btn-sm" (click)="exportResults('csv')">
+            <i class="bi bi-file-earmark-spreadsheet me-1"></i>CSV
+          </button>
+          <button class="btn btn-outline-danger btn-sm" (click)="exportResults('pdf')">
+            <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+          </button>
+          <button class="btn btn-outline-success btn-sm" (click)="exportResults('excel')">
+            <i class="bi bi-file-earmark-excel me-1"></i>Excel
+          </button>
+          <button class="btn btn-outline-secondary btn-sm" (click)="printResult()">
+            <i class="bi bi-printer me-1"></i>Print
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="loadingStudents" class="text-center py-3">
+        <div class="spinner-border spinner-border-sm" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-2">Loading student results...</span>
+      </div>
+
+      <div *ngIf="!loadingStudents" class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>Student Name</th>
+              <th>Email</th>
+              <th>Score</th>
+              <th>Percentage</th>
+              <th>Grade</th>
+              <th>Time Spent</th>
+              <th>Status</th>
+              <th>Graded</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let result of studentExamResults">
+              <td class="fw-bold">{{ result.studentName }}</td>
+              <td>{{ result.studentEmail }}</td>
+              <td>{{ result.score || 0 }}/{{ result.totalMarks || 100 }}</td>
+              <td>
+                <span class="badge bg-light text-dark">
+                  {{ result.percentage || 0 | number:'1.1-1' }}%
+                </span>
+              </td>
+              <td>
+                <span [class]="'badge ' + getGradeBadgeClass(result.grade)">
+                  {{ result.grade || 'N/A' }}
+                </span>
+              </td>
+              <td>{{ result.timeSpent || 0 }} min</td>
+              <td>
+                <span [class]="'badge ' + getStatusBadgeClass(result.status)">
+                  {{ result.status || 'Unknown' }}
+                </span>
+              </td>
+              <td>
+                <i [class]="result.graded ? 'bi bi-check-circle text-success' : 'bi bi-clock text-warning'"></i>
+                {{ result.graded ? 'Graded' : 'Pending' }}
+              </td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary" 
+                        (click)="viewStudentResultAsExaminer(result.sessionId)"
+                        [disabled]="!result.completed">
+                  <i class="bi bi-eye"></i> View
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination for Student Results -->
+      <div *ngIf="studentExamResults.length > 0" class="d-flex justify-content-between align-items-center mt-3">
+        <div class="text-muted">
+          Showing {{ studentExamResults.length }} of {{ totalElements }} students
+        </div>
+        <nav>
+          <ul class="pagination">
+            <li class="page-item" [class.disabled]="currentPage === 0">
+              <a class="page-link" (click)="onPageChange(currentPage - 1)" href="javascript:void(0)">Previous</a>
+            </li>
+            <li class="page-item" [class.active]="i === currentPage" *ngFor="let i of [].constructor(totalPages); let index = index">
+              <a class="page-link" (click)="onPageChange(index)" href="javascript:void(0)">{{ index + 1 }}</a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+              <a class="page-link" (click)="onPageChange(currentPage + 1)" href="javascript:void(0)">Next</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div *ngIf="studentExamResults.length === 0 && !loadingStudents" class="text-center py-4">
+        <p class="text-muted">No student results found for this test.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Result View (Both Student and Examiner) -->
+  <div *ngIf="selectedStudentResult" class="detailed-result-view">
+    <div class="card shadow-lg print-card">
+      <div class="card-header bg-primary text-white print-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">
+            <i class="bi bi-award me-2"></i>Exam Result Details
+          </h4>
+          <div class="btn-group">
+            <button class="btn btn-light btn-sm" (click)="printResult()">
+              <i class="bi bi-printer me-1"></i>Print
+            </button>
+            <button class="btn btn-light btn-sm" (click)="closeDetailedView()">
+              <i class="bi bi-x-lg"></i> Close
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <!-- Loading for details -->
+        <div *ngIf="loadingDetails" class="text-center py-3">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">Loading detailed result...</p>
+        </div>
+
+        <div *ngIf="!loadingDetails">
+          <!-- Student Information -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <h6 class="text-muted">Student Information</h6>
+              <div class="student-info">
+                <p class="mb-1"><strong>Name:</strong> {{ selectedStudentResult.studentName }}</p>
+                <p class="mb-1"><strong>Email:</strong> {{ selectedStudentResult.studentEmail }}</p>
+                <p class="mb-1"><strong>Student ID:</strong> {{ selectedStudentResult.studentId }}</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6 class="text-muted">Exam Information</h6>
+              <div class="exam-info">
+                <p class="mb-1"><strong>Test:</strong> {{ selectedStudentResult.testTitle }}</p>
+                <p class="mb-1"><strong>Session ID:</strong> {{ selectedStudentResult.sessionId }}</p>
+                <p class="mb-1"><strong>Status:</strong> 
+                  <span [class]="'badge ' + getStatusBadgeClass(selectedStudentResult.status)">
+                    {{ selectedStudentResult.status }}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Performance Summary -->
+          <div class="performance-summary bg-light rounded p-4 mb-4">
+            <div class="row text-center">
+              <div class="col-md-3 border-end">
+                <div class="display-6 fw-bold text-primary">
+                  {{ selectedStudentResult.score || 0 }}/{{ selectedStudentResult.totalMarks || 100 }}
+                </div>
+                <div class="text-muted">Score</div>
+              </div>
+              <div class="col-md-3 border-end">
+                <div class="display-6 fw-bold text-info">
+                  {{ selectedStudentResult.percentage || 0 | number:'1.1-1' }}%
+                </div>
+                <div class="text-muted">Percentage</div>
+              </div>
+              <div class="col-md-3 border-end">
+                <div [class]="'display-6 fw-bold ' + (selectedStudentResult.passed ? 'text-success' : 'text-danger')">
+                  {{ selectedStudentResult.grade || 'N/A' }}
+                </div>
+                <div class="text-muted">Grade</div>
+              </div>
+              <div class="col-md-3">
+                <div class="display-6 fw-bold text-warning">
+                  {{ selectedStudentResult.timeSpent || 0 }} min
+                </div>
+                <div class="text-muted">Time Spent</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Result Status -->
+          <div class="result-status text-center mb-4">
+            <div [class]="'alert ' + (selectedStudentResult.passed ? 'alert-success' : 'alert-danger') + ' alert-dismissible fade show'">
+              <h5 class="alert-heading">
+                <i class="bi me-2" [class.bi-check-circle]="selectedStudentResult.passed" [class.bi-x-circle]="!selectedStudentResult.passed"></i>
+                {{ selectedStudentResult.passed ? 'Congratulations! You Passed the Exam' : 'Exam Not Passed' }}
+              </h5>
+              <p class="mb-0">
+                You scored {{ selectedStudentResult.percentage || 0 | number:'1.1-1' }}% 
+                (Minimum required: {{ selectedStudentResult.passingScore || 0 }}%)
+              </p>
+            </div>
+          </div>
+
+          <!-- Timeline -->
+          <div class="timeline mb-4">
+            <h6 class="text-muted mb-3">Exam Timeline</h6>
+            <div class="row">
+              <div class="col-md-6">
+                <p class="mb-1"><strong>Start Time:</strong> 
+                  {{ selectedStudentResult.startTime | date:'medium' }}
+                </p>
+              </div>
+              <div class="col-md-6">
+                <p class="mb-1"><strong>End Time:</strong> 
+                  {{ selectedStudentResult.endTime | date:'medium' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer bg-light text-center print-footer">
+        <small class="text-muted">
+          Result generated on {{ currentDate | date:'medium' }} • 
+          This is an official examination result.
+        </small>
+      </div>
+    </div>
+  </div>
+</div>

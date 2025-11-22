@@ -1,0 +1,13 @@
+@import 'auth';
+
+// Login specific styles can be added here if needed
+// Most styles are inherited from the auth base
+
+.demo-hint {
+  border-left: 3px solid $warning-color;
+  
+  small {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+}

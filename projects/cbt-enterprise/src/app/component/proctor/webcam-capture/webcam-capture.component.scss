@@ -1,0 +1,257 @@
+@import 'variables';
+
+.proctoring-status {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: $shadow-sm;
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+
+  &.compact {
+    padding: 0.75rem;
+    
+    .status-grid {
+      gap: 0.5rem;
+    }
+  }
+}
+
+// Header Styles
+.status-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+
+  .status-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $dark-color;
+    margin: 0;
+  }
+
+  .overall-status {
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.03);
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      animation: pulse 2s infinite;
+    }
+
+    &.status-excellent {
+      color: #198754;
+      .status-dot { background: #198754; }
+    }
+
+    &.status-good {
+      color: #0dcaf0;
+      .status-dot { background: #0dcaf0; }
+    }
+
+    &.status-fair {
+      color: #ffc107;
+      .status-dot { background: #ffc107; }
+    }
+
+    &.status-poor {
+      color: #dc3545;
+      .status-dot { background: #dc3545; }
+    }
+
+    .violation-count {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.4rem;
+    }
+  }
+}
+
+// Status Grid
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+
+  &.grid-compact {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+// Status Item
+.status-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    transition: all 0.3s ease;
+  }
+
+  // Status Variants
+  &.status-active {
+    background: rgba(25, 135, 84, 0.08);
+    border: 1px solid rgba(25, 135, 84, 0.2);
+
+    &::before { background: #198754; }
+    
+    .status-icon { color: #198754; }
+    .status-indicator { color: #198754; }
+  }
+
+  &.status-inactive {
+    background: rgba(108, 117, 125, 0.08);
+    border: 1px solid rgba(108, 117, 125, 0.2);
+
+    &::before { background: #6c757d; }
+    
+    .status-icon { color: #6c757d; }
+    .status-indicator { color: #6c757d; }
+  }
+
+  &.status-warning {
+    background: rgba(255, 193, 7, 0.08);
+    border: 1px solid rgba(255, 193, 7, 0.2);
+
+    &::before { background: #ffc107; }
+    
+    .status-icon { color: #ffc107; }
+    .status-indicator { color: #ffc107; }
+  }
+
+  &.status-error {
+    background: rgba(220, 53, 69, 0.08);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+    animation: shake 0.5s ease-in-out;
+
+    &::before { background: #dc3545; }
+    
+    .status-icon { color: #dc3545; }
+    .status-indicator { color: #dc3545; }
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: $shadow-sm;
+  }
+}
+
+// Status Icon
+.status-icon {
+  margin-right: 0.75rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+}
+
+// Status Content
+.status-content {
+  flex: 1;
+
+  .status-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: $dark-color;
+    margin-bottom: 0.25rem;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: 500;
+
+    .bi {
+      margin-right: 0.25rem;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+// Status Badge (Compact Mode)
+.status-badge {
+  .bi {
+    font-size: 0.9rem;
+  }
+}
+
+// Status Update
+.status-update {
+  position: absolute;
+  bottom: 0.25rem;
+  right: 0.5rem;
+}
+
+// Monitoring Status
+.monitoring-status {
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+// Session Info
+.session-info {
+  font-size: 0.75rem;
+}
+
+// Animations
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .proctoring-status {
+    padding: 0.75rem;
+  }
+
+  .status-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem;
+  }
+
+  .status-item {
+    padding: 0.5rem;
+    
+    .status-icon {
+      margin-right: 0.5rem;
+      font-size: 1rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .status-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

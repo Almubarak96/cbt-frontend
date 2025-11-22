@@ -1,0 +1,229 @@
+@import 'variables';
+
+// Auth Layout Base
+.auth-container {
+  min-height: 100vh;
+  //background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.05)" points="0,1000 1000,0 1000,1000"/></svg>');
+    background-size: cover;
+  }
+}
+
+// border-radius: $border-radius-lg;
+// box-shadow: $shadow-lg;
+// Auth Card Base
+.auth-card {
+  background: white;
+   box-shadow: $shadow-sm;
+
+  border: none;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+
+  .card-body {
+    padding: 2.5rem;
+  }
+}
+
+// Auth Header
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+
+  .auth-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 1.5rem;
+    background: $primary-gradient;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 1.75rem;
+      color: white;
+    }
+  }
+
+  .auth-title {
+    font-size: 1.5rem;
+    font-weight: $font-weight-bold;
+    color: $dark-color;
+    margin-bottom: 0.5rem;
+  }
+
+  .auth-subtitle {
+    font-size: 0.95rem;
+    color: $secondary-color;
+    margin: 0;
+  }
+}
+
+// Auth Form Elements
+.auth-form {
+  .form-group {
+    margin-bottom: 1.5rem;
+
+    .form-label {
+      font-weight: $font-weight-semibold;
+      color: $dark-color;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+
+      &.required::after {
+        content: " *";
+        color: $danger-color;
+      }
+    }
+
+    .form-control {
+      border: 2px solid #e9ecef;
+      border-radius: $border-radius-sm;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+
+      &:focus {
+        border-color: $primary-color;
+        box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+      }
+
+      &.is-invalid {
+        border-color: $danger-color;
+      }
+    }
+  }
+
+  .invalid-feedback {
+    font-size: 0.875rem;
+    font-weight: $font-weight-normal;
+    margin-top: 0.25rem;
+  }
+}
+
+// Auth Actions
+.auth-actions {
+  margin-top: 2rem;
+
+  .btn-primary {
+    background: $primary-gradient;
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: $font-weight-semibold;
+    border-radius: $border-radius-sm;
+    width: 100%;
+    transition: all 0.3s ease;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: $shadow-md;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Auth Links
+.auth-links {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
+
+  .auth-link {
+    color: $primary-color;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: $font-weight-semibold;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: $primary-dark;
+      text-decoration: underline;
+    }
+  }
+}
+
+// Alert Styling
+.alert {
+  border: none;
+  border-radius: $border-radius-md;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+
+  &.alert-success {
+    background: rgba($success-color, 0.1);
+    color: $success-color;
+    border-left: 4px solid $success-color;
+  }
+
+  &.alert-danger {
+    background: rgba($danger-color, 0.1);
+    color: $danger-color;
+    border-left: 4px solid $danger-color;
+  }
+}
+
+// Loading Animation
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.bi-arrow-repeat {
+  animation: spin 1s linear infinite;
+}
+
+// Responsive Design
+@media (max-width: $breakpoint-sm) {
+  .auth-container {
+    padding: 1rem;
+  }
+
+  .auth-card .card-body {
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-header {
+    .auth-icon {
+      width: 60px;
+      height: 60px;
+
+      i {
+        font-size: 1.5rem;
+      }
+    }
+
+    .auth-title {
+      font-size: 1.35rem;
+    }
+  }
+}

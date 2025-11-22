@@ -1,0 +1,204 @@
+<div class="instructions-container">
+  <div class="instructions-card">
+    <div class="card-body">
+      
+      <!-- Header Section -->
+      <div class="instructions-header">
+        <div class="header-content">
+          <h2 class="header-title">
+            <i class="bi bi-card-text"></i>
+            Test Instructions
+          </h2>
+          <p class="header-subtitle" *ngIf="test">
+            Managing instructions for: <strong>{{ test.title }}</strong>
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline-secondary" (click)="onBack()">
+            <i class="bi bi-arrow-left me-1"></i> Back to Tests
+          </button>
+          <button class="btn btn-outline-info" (click)="previewInstructions()">
+            <i class="bi bi-eye me-1"></i> Preview
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-2">Loading instructions...</p>
+      </div>
+
+      <!-- Alerts -->
+      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+      </div>
+
+      <!-- Instructions Form -->
+      <div *ngIf="!isLoading">
+        <form [formGroup]="instructionsForm" (ngSubmit)="onSubmit()" class="instructions-form">
+          
+          <!-- Basic Information Section -->
+          <div class="form-section">
+            <h5 class="section-title">
+              <i class="bi bi-info-circle me-2"></i>
+              Basic Information
+            </h5>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="examName" class="form-label required">Exam Name</label>
+                <input type="text" class="form-control" id="examName" formControlName="examName"
+                       [class.is-invalid]="instructionsForm.get('examName')?.invalid && instructionsForm.get('examName')?.touched"
+                       placeholder="Enter exam name">
+                <div class="invalid-feedback" *ngIf="instructionsForm.get('examName')?.errors?.['required']">
+                  Exam name is required
+                </div>
+              </div>
+              
+              <div class="col-md-3 mb-3">
+                <label for="durationMinutes" class="form-label required">Duration (minutes)</label>
+                <input type="number" class="form-control" id="durationMinutes" formControlName="durationMinutes"
+                       [class.is-invalid]="instructionsForm.get('durationMinutes')?.invalid && instructionsForm.get('durationMinutes')?.touched"
+                       min="1" placeholder="60">
+                <div class="invalid-feedback" *ngIf="instructionsForm.get('durationMinutes')?.errors?.['required']">
+                  Duration is required
+                </div>
+                <div class="invalid-feedback" *ngIf="instructionsForm.get('durationMinutes')?.errors?.['min']">
+                  Duration must be at least 1 minute
+                </div>
+              </div>
+              
+              <div class="col-md-3 mb-3">
+                <label for="totalQuestions" class="form-label required">Total Questions</label>
+                <input type="number" class="form-control" id="totalQuestions" formControlName="totalQuestions"
+                       [class.is-invalid]="instructionsForm.get('totalQuestions')?.invalid && instructionsForm.get('totalQuestions')?.touched"
+                       min="1" placeholder="0">
+                <div class="invalid-feedback" *ngIf="instructionsForm.get('totalQuestions')?.errors?.['required']">
+                  Total questions is required
+                </div>
+                <div class="invalid-feedback" *ngIf="instructionsForm.get('totalQuestions')?.errors?.['min']">
+                  Must have at least 1 question
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings Section -->
+          <div class="form-section">
+            <h5 class="section-title">
+              <i class="bi bi-gear me-2"></i>
+              Exam Settings
+            </h5>
+            
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="passingScore" class="form-label required">Passing Score (%)</label>
+                <input type="number" class="form-control" id="passingScore" formControlName="passingScore"
+                       [class.is-invalid]="instructionsForm.get('passingScore')?.invalid && instructionsForm.get('passingScore')?.touched"
+                       min="0" max="100" placeholder="70">
+                <div class="invalid-feedback" *ngIf="instructionsForm.get('passingScore')?.errors?.['min']">
+                  Passing score cannot be negative
+                </div>
+                <div class="invalid-feedback" *ngIf="instructionsForm.get('passingScore')?.errors?.['max']">
+                  Passing score cannot exceed 100%
+                </div>
+              </div>
+              
+              <div class="col-md-8">
+                <div class="settings-grid">
+                  <div class="form-check form-switch setting-item">
+                    <input class="form-check-input" type="checkbox" id="shuffleQuestions" formControlName="shuffleQuestions">
+                    <label class="form-check-label" for="shuffleQuestions">
+                      <i class="bi bi-shuffle me-2"></i>
+                      Shuffle Questions
+                    </label>
+                  </div>
+                  <div class="form-check form-switch setting-item">
+                    <input class="form-check-input" type="checkbox" id="shuffleChoices" formControlName="shuffleChoices">
+                    <label class="form-check-label" for="shuffleChoices">
+                      <i class="bi bi-arrow-left-right me-2"></i>
+                      Shuffle Answer Choices
+                    </label>
+                  </div>
+                  <div class="form-check form-switch setting-item">
+                    <input class="form-check-input" type="checkbox" id="showResultsImmediately" formControlName="showResultsImmediately">
+                    <label class="form-check-label" for="showResultsImmediately">
+                      <i class="bi bi-eye me-2"></i>
+                      Show Results Immediately After Submission
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Instructions Section -->
+          <div class="form-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="section-title mb-0">
+                <i class="bi bi-list-check me-2"></i>
+                Exam Instructions
+              </h5>
+              <button type="button" class="btn btn-primary" (click)="addNewInstruction()">
+                <i class="bi bi-plus-lg me-1"></i> Add Instruction
+              </button>
+            </div>
+            
+            <div formArrayName="instructions" class="instructions-list">
+              <div *ngFor="let instruction of instructionsArray.controls; let i = index" 
+                   class="instruction-item">
+                <div class="d-flex align-items-start gap-3">
+                  <span class="badge bg-primary mt-1">{{ i + 1 }}</span>
+                  <div class="flex-grow-1">
+                    <textarea class="form-control" [formControlName]="i" rows="3"
+                              placeholder="Enter instruction text..."></textarea>
+                    <div class="invalid-feedback d-block" 
+                         *ngIf="instructionsArray.at(i).invalid && instructionsArray.at(i).touched">
+                      Instruction text is required
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-outline-danger" 
+                          (click)="removeInstruction(i)" [disabled]="instructionsArray.length === 1">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="invalid-feedback d-block mt-2" *ngIf="instructionsArray.invalid && instructionsArray.touched">
+              At least one instruction is required
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline-secondary" (click)="onReset()">
+              <i class="bi bi-arrow-clockwise me-1"></i> Reset to Defaults
+            </button>
+            
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-secondary" (click)="onBack()">
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="isLoading || instructionsForm.invalid">
+                <i class="bi" [class.bi-check-lg]="!isLoading" [class.bi-arrow-repeat]="isLoading"></i>
+                {{ isLoading ? 'Saving...' : (isEditing ? 'Update Instructions' : 'Save Instructions') }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

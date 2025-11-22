@@ -1,0 +1,205 @@
+<div class="container mt-4" *ngIf="!loading; else loadingTpl">
+  <form [formGroup]="configForm" (ngSubmit)="onSave()">
+
+    <!-- ========================= Application ========================= -->
+    <div class="card  bg-white mt-5 mb-5">
+      <div class="card-body">
+        <section id="application" class="mb-5">
+          <h5 class="border-bottom pb-2">Application</h5>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Application Name</label>
+            <input class="form-control" formControlName="spring.application.name" placeholder="CBT Enterprise">
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ========================= Database ========================= -->
+    <div class="card  bg-white mt-5 mb-5">
+      <div class="card-body">
+        <section id="database" class="mb-5">
+          <h5 class="border-bottom pb-2">Database</h5>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Database URL</label>
+            <input class="form-control" formControlName="spring.datasource.url"
+              placeholder="jdbc:postgresql://host:5432/dbname">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Username</label>
+            <input class="form-control" formControlName="spring.datasource.username" placeholder="dbuser">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" formControlName="spring.datasource.password"
+              placeholder="********">
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ========================= JWT Security ========================= -->
+    <div class="card  bg-white mt-5 mb-5">
+      <div class="card-body">
+        <section id="jwt" class="mb-5">
+          <h5 class="border-bottom pb-2">JWT Security</h5>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Secret</label>
+            <input type="password" class="form-control" formControlName="jwt.secret" placeholder="JWT Secret Key">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Expiration (ms)</label>
+            <input class="form-control" formControlName="jwt.expirationMs" placeholder="3600000">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Access Exp (sec)</label>
+            <input class="form-control" formControlName="jwt.access-exp-sec" placeholder="900">
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ========================= Redis Cache ========================= -->
+    <div class="card  bg-white mt-5 mb-5">
+      <div class="card-body">
+        <section id="redis" class="mb-5">
+          <h5 class="border-bottom pb-2">Redis Cache</h5>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Host</label>
+            <input class="form-control" formControlName="spring.redis.host" placeholder="localhost">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Port</label>
+            <input class="form-control" formControlName="spring.redis.port" placeholder="6379">
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ========================= Email SMTP ========================= -->
+    <div class="card  bg-white mt-5 mb-5">
+      <div class="card-body">
+        <section id="email" class="mb-5">
+          <h5 class="border-bottom pb-2">Email SMTP</h5>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Mail Host</label>
+            <input class="form-control" formControlName="spring.mail.host" placeholder="smtp.mail.com">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Port</label>
+            <input class="form-control" formControlName="spring.mail.port" placeholder="587">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Username</label>
+            <input class="form-control" formControlName="spring.mail.username" placeholder="mail@domain.com">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" formControlName="spring.mail.password" placeholder="********">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Mail From</label>
+            <input class="form-control" formControlName="app.mail.from" placeholder="no-reply@domain.com">
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ========================= Template Directory ========================= -->
+    <div class="card  bg-white mt-5 mb-5">
+      <div class="card-body">
+        <section id="templates" class="mb-5">
+          <h5 class="border-bottom pb-2">Template Directory</h5>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <input class="form-control" formControlName="cbt.templates.dir" placeholder="/opt/cbt/templates">
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ========================= Storage Provider ========================= -->
+    <div class="card  bg-white mt-5 mb-5">
+      <div class="card-body">
+        <section id="storage" class="mb-5">
+          <h5 class="border-bottom pb-2">Storage Provider</h5>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Storage Type</label>
+            <select class="form-select" formControlName="proctor.storage.type">
+              <option value="LOCAL">LOCAL</option>
+              <option value="AWS">AWS</option>
+              <option value="AZURE">AZURE</option>
+              <option value="GCP">GCP</option>
+            </select>
+          </div>
+
+          <!-- AWS -->
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">AWS Bucket</label>
+            <input class="form-control" formControlName="aws.s3.bucket-name" placeholder="cbt-bucket">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Region</label>
+            <input class="form-control" formControlName="aws.s3.region" placeholder="us-east-1">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Access Key</label>
+            <input class="form-control" formControlName="aws.s3.access-key">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Secret Key</label>
+            <input type="password" class="form-control" formControlName="aws.s3.secret-key">
+          </div>
+
+          <!-- Azure -->
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Azure Container</label>
+            <input class="form-control" formControlName="azure.blob.container">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Connection String</label>
+            <input type="password" class="form-control" formControlName="azure.blob.connection-string">
+          </div>
+
+          <!-- GCP -->
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">GCP Bucket</label>
+            <input class="form-control" formControlName="gcp.storage.bucket">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Credentials File</label>
+            <input class="form-control" formControlName="gcp.storage.credentials-file">
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ========================= Logging ========================= -->
+    <div class="card  bg-white mt-5 mb-5">
+      <div class="card-body">
+        <section id="logging" class="mb-5">
+          <h5 class="border-bottom pb-2">Logging</h5>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">Spring Log Level</label>
+            <input class="form-control" formControlName="logging.level.org.springframework" placeholder="INFO">
+          </div>
+          <div class="mb-3 col-12 col-md-6 col-lg-5">
+            <label class="form-label">App Log Level</label>
+            <input class="form-control" formControlName="logging.level.com.almubaraksuleiman.cbts" placeholder="DEBUG">
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="sticky-bottom py-3 text-end pe-4">
+      <button class="btn btn-success px-5" type="submit">Save</button>
+    </div>
+
+  </form>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="text-center p-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2">Loading configurations...</p>
+  </div>
+</ng-template>

@@ -1,0 +1,367 @@
+<div class="student-results-management-container">
+  <!-- Header Section -->
+  <div class="management-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="header-title">
+          <i class="bi bi-people me-2"></i>
+          Student Results
+        </h1>
+        <p class="header-subtitle">Test ID: {{ testId }} - Monitor student performance and results</p>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="header-stats">
+        <div class="stat-item">
+          <div class="stat-number">{{ totalElements || 0 }}</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-success">{{ passedCount }}</div>
+          <div class="stat-label">Passed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-warning">{{ completedCount }}</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-info">{{ calculatePassRate() | number:'1.1-1' }}%</div>
+          <div class="stat-label">Pass Rate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <!-- Search & Filters -->
+      <div class="filters-section">
+        <!-- Search Box -->
+        <div class="search-container">
+          <div class="input-group search-input-group">
+            <span class="input-group-text">
+              <i class="bi bi-search"></i>
+            </span>
+            <input type="text" class="form-control" placeholder="Search students by name, email, or ID..."
+              [(ngModel)]="searchTerm" (input)="onSearch($event)">
+            <button *ngIf="searchTerm" class="btn btn-outline-secondary btn-clear" type="button"
+              (click)="clearSearch()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="filter-group">
+          <label class="filter-label">Filter by Status:</label>
+          <div class="status-filter-buttons">
+            <button type="button" class="btn btn-filter-status" [class.active]="statusFilter === 'all'"
+              (click)="setStatusFilter('all')">
+              <span class="filter-dot all"></span>
+              All Students
+              <span class="filter-count">{{ totalElements || 0 }}</span>
+            </button>
+
+            <button type="button" class="btn btn-filter-status" [class.active]="statusFilter === 'completed'"
+              (click)="setStatusFilter('completed')">
+              <span class="filter-dot completed"></span>
+              Completed
+              <span class="filter-count">{{ completedCount }}</span>
+            </button>
+
+            <button type="button" class="btn btn-filter-status" [class.active]="statusFilter === 'in-progress'"
+              (click)="setStatusFilter('in-progress')">
+              <span class="filter-dot in-progress"></span>
+              In Progress
+              <span class="filter-count">{{ getInProgressCount() }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <div class="page-size-selector">
+          <label class="form-label-sm mb-0">Show:</label>
+          <select class="form-select form-select-sm" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+            <option *ngFor="let size of [5, 10, 20, 50]" [value]="size">{{ size }}</option>
+          </select>
+        </div>
+
+        <div class="primary-actions">
+          <button class="btn btn-info btn-sm" [routerLink]="['/examiner/results', testId, 'essay-grading']">
+            <i class="bi bi-pencil-square me-1"></i>
+            Grade Essays
+          </button>
+
+          <div class="btn-group">
+            <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <i class="bi bi-download me-1"></i>
+              Export
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" (click)="exportResults('csv')">
+                  <i class="bi bi-file-earmark-spreadsheet me-2"></i>CSV Format
+                </a></li>
+              <li><a class="dropdown-item" (click)="exportResults('excel')">
+                  <i class="bi bi-file-earmark-excel me-2"></i>Excel Format
+                </a></li>
+              <li><a class="dropdown-item" (click)="exportResults('pdf')">
+                  <i class="bi bi-file-earmark-pdf me-2"></i>PDF Format
+                </a></li>
+            </ul>
+          </div>
+
+          <button class="btn btn-outline-secondary btn-sm" (click)="goBack()">
+            <i class="bi bi-arrow-left me-1"></i>
+            Back
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced Filters Section -->
+    <div class="advanced-filters-section">
+      <div class="filters-body">
+        <div class="row g-3 align-items-end">
+          <!-- Grading Filter -->
+          <div class="col-md-3">
+            <label class="form-label">Grading Status</label>
+            <select class="form-select form-select-sm" [(ngModel)]="gradedFilter" (change)="onFilterChange()">
+              <option value="all">All Grading Status</option>
+              <option value="graded">Graded</option>
+              <option value="not-graded">Not Graded</option>
+            </select>
+          </div>
+
+          <!-- Results Info -->
+          <div class="col-md-6">
+            <div class="results-info" *ngIf="hasActiveFilters()">
+              <span class="text-muted">
+                <strong>{{ studentResults.length }}</strong> of <strong>{{ totalElements }}</strong> students match your
+                criteria
+                <span *ngIf="searchTerm" class="search-term">for "{{ searchTerm }}"</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="error-container">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <div>
+          <h6 class="alert-heading mb-1">Unable to Load Results</h6>
+          <p class="mb-0">{{ errorMessage }}</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+    </div>
+  </div>
+
+  <!-- Success State -->
+  <div *ngIf="successMessage" class="success-container">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <div>
+          <h6 class="alert-heading mb-1">Success</h6>
+          <p class="mb-0">{{ successMessage }}</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="loading-text">Loading student results...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && !errorMessage" class="main-content">
+    <!-- Empty State -->
+    <div *ngIf="studentResults.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-people"></i>
+      </div>
+      <h3>No Student Results Found</h3>
+      <p class="text-muted">
+        {{ hasActiveFilters() ? 'No students match your search criteria.' : 'Student results will appear here once they
+        complete the exam.' }}
+      </p>
+      <div class="empty-actions">
+        <button *ngIf="hasActiveFilters()" (click)="clearFilters()" class="btn btn-outline-primary me-2">
+          Clear Filters
+        </button>
+        <button (click)="refreshResults()" class="btn btn-primary">
+          <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Students Grid -->
+    <div *ngIf="studentResults.length > 0" class="students-grid">
+      <div *ngFor="let result of studentResults" class="student-card">
+        <div class="student-card-header">
+          <div class="student-avatar">
+            {{ result.studentName?.charAt(0) || 'S' }}
+          </div>
+          <div class="student-info">
+            <h5 class="student-name">{{ result.studentName || 'Student ' + result.studentId }}</h5>
+            <div class="student-details">
+              <div class="detail-item">
+                <i class="bi bi-envelope"></i>
+                <span>{{ result.studentEmail || 'No email' }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="bi bi-person-badge"></i>
+                <span>ID: {{ result.studentId }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="student-status" [ngClass]="getStatusClass(result.status)">
+            {{ result.status || 'Not Started' }}
+          </div>
+        </div>
+
+        <div class="student-card-body">
+          <!-- Score & Grade Section -->
+          <div class="score-section">
+            <div class="score-item">
+              <div class="score-label">Score</div>
+              <div class="score-value" [ngClass]="'text-' + getScoreColor(result.percentage || 0)">
+                {{ result.percentage !== null ? (result.percentage | number:'1.1-1') + '%' : 'N/A' }}
+              </div>
+              <div class="score-detail">
+                {{ result.score || 0 }}/{{ result.totalMarks || 100 }} points
+              </div>
+            </div>
+
+            <div class="score-item">
+              <div class="score-label">Grade</div>
+              <div class="grade-badge" [ngClass]="'bg-' + getGradeColor(result.grade || 'N/A')">
+                {{ result.grade || 'N/A' }}
+              </div>
+              <div class="score-detail" [ngClass]="result.passed ? 'text-success' : 'text-danger'">
+                {{ result.passed ? 'Passed' : 'Failed' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress & Time Section -->
+          <div class="progress-section">
+            <div class="progress-item">
+              <label>Completion</label>
+              <div class="progress-bar-container">
+                <div class="progress-bar">
+                  <div class="progress-fill completion" [style.width.%]="getCompletionProgress(result)"></div>
+                </div>
+                <span class="progress-value">{{ getCompletionProgress(result) | number:'1.0-0' }}%</span>
+              </div>
+            </div>
+
+            <div class="time-item" *ngIf="result.timeSpent && result.timeSpent > 0">
+              <i class="bi bi-clock"></i>
+              <span>{{ result.timeSpent }} minutes</span>
+            </div>
+
+            <div class="time-item" *ngIf="!result.timeSpent || result.timeSpent === 0">
+              <i class="bi bi-dash-circle"></i>
+              <span>No time data</span>
+            </div>
+          </div>
+
+          <!-- Submission Info -->
+          <div class="submission-section" *ngIf="result.endTime">
+            <div class="submission-item">
+              <i class="bi bi-calendar"></i>
+              <span>Submitted: {{ result.endTime | date:'MMM dd, yyyy' }}</span>
+            </div>
+            <div class="submission-item">
+              <i class="bi bi-clock"></i>
+              <span>At: {{ result.endTime | date:'hh:mm a' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="student-card-footer">
+          <div class="action-buttons-grid">
+            <button (click)="viewStudentDetails(result.sessionId)" class="btn btn-action btn-outline-primary"
+              [disabled]="!result.completed" title="View Detailed Results">
+              <i class="bi bi-eye"></i>
+              <span>Details</span>
+            </button>
+
+            <button (click)="viewAnalytics(result.sessionId)" class="btn btn-action btn-outline-info"
+              title="View Analytics">
+              <i class="bi bi-graph-up"></i>
+              <span>Analytics</span>
+            </button>
+
+            <button *ngIf="!result.graded && result.completed" class="btn btn-action btn-outline-success"
+              title="Grade Exam">
+              <i class="bi bi-check-lg"></i>
+              <span>Grade</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="studentResults.length > 0" class="pagination-section">
+      <div class="pagination-info">
+        Showing <strong>{{ startIndex + 1 }}</strong> to <strong>{{ endIndex + 1 }}</strong>
+        of <strong>{{ totalElements }}</strong> students
+      </div>
+
+      <nav class="pagination-nav">
+        <ul class="pagination">
+          <!-- First Page -->
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" (click)="changePage(0)" aria-label="First">
+              <i class="bi bi-chevron-double-left"></i>
+            </a>
+          </li>
+
+          <!-- Previous Page -->
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" (click)="changePage(currentPage - 1)" aria-label="Previous">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+          </li>
+
+          <!-- Page Numbers -->
+          <li *ngFor="let page of getVisiblePages()" class="page-item" [class.active]="page === currentPage">
+            <a class="page-link" (click)="changePage(page)">
+              {{ page + 1 }}
+            </a>
+          </li>
+
+          <!-- Next Page -->
+          <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+            <a class="page-link" (click)="changePage(currentPage + 1)" aria-label="Next">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          </li>
+
+          <!-- Last Page -->
+          <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+            <a class="page-link" (click)="changePage(totalPages - 1)" aria-label="Last">
+              <i class="bi bi-chevron-double-right"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,244 @@
+<div class="calculator">
+  <!-- Display -->
+  <div class="display">
+    <input type="text" [value]="display" readonly class="display-input" placeholder="0">
+  </div>
+
+  <!-- Mode Toggle -->
+  <div class="mode-toggle">
+    <button (click)="toggleScientific()" class="mode-btn" [class.active]="isScientific">
+      <i class="bi" [class.bi-calculator]="!isScientific" [class.bi-graph-up]="isScientific"></i>
+      {{ isScientific ? 'Scientific' : 'Basic' }}
+    </button>
+  </div>
+
+  <!-- Calculator Keypad -->
+  <div class="keypad">
+    <!-- Scientific Functions -->
+    <div class="scientific-functions" *ngIf="isScientific">
+      <button (click)="scientificFunction('sin')" class="sci-btn sci-trig">
+        <span>sin</span>
+      </button>
+      <button (click)="scientificFunction('cos')" class="sci-btn sci-trig">
+        <span>cos</span>
+      </button>
+      <button (click)="scientificFunction('tan')" class="sci-btn sci-trig">
+        <span>tan</span>
+      </button>
+      <button (click)="scientificFunction('log')" class="sci-btn sci-func">
+        <span>log</span>
+      </button>
+      <button (click)="scientificFunction('ln')" class="sci-btn sci-func">
+        <span>ln</span>
+      </button>
+
+      <button (click)="scientificFunction('sqrt')" class="sci-btn sci-math">
+        <span>√</span>
+      </button>
+      <button (click)="scientificFunction('square')" class="sci-btn sci-math">
+        <span>x²</span>
+      </button>
+      <button (click)="scientificFunction('cube')" class="sci-btn sci-math">
+        <span>x³</span>
+      </button>
+      <button (click)="scientificFunction('factorial')" class="sci-btn sci-func">
+        <span>x!</span>
+      </button>
+      <button (click)="scientificFunction('pi')" class="sci-btn sci-const">
+        <span>π</span>
+      </button>
+    </div>
+
+    <!-- Basic Keypad -->
+    <div class="basic-keypad">
+      <!-- First Row -->
+      <button (click)="clear()" class="func-btn btn-clear">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
+      <button (click)="backspace()" class="func-btn btn-backspace">
+        <i class="bi bi-backspace"></i>
+      </button>
+      <button (click)="addToDisplay('(')" class="func-btn btn-bracket" *ngIf="isScientific">
+        <span>(</span>
+      </button>
+      <button (click)="addToDisplay(')')" class="func-btn btn-bracket" *ngIf="isScientific">
+        <span>)</span>
+      </button>
+      <button (click)="addToDisplay('/')" class="func-btn btn-operator">
+        <span>÷</span>
+      </button>
+
+      <!-- Number Rows -->
+      <button (click)="addToDisplay('7')" class="num-btn">7</button>
+      <button (click)="addToDisplay('8')" class="num-btn">8</button>
+      <button (click)="addToDisplay('9')" class="num-btn">9</button>
+      <button (click)="addToDisplay('*')" class="func-btn btn-operator">
+        <span>×</span>
+      </button>
+
+      <button (click)="addToDisplay('4')" class="num-btn">4</button>
+      <button (click)="addToDisplay('5')" class="num-btn">5</button>
+      <button (click)="addToDisplay('6')" class="num-btn">6</button>
+      <button (click)="addToDisplay('-')" class="func-btn btn-operator">
+        <span>−</span>
+      </button>
+
+      <button (click)="addToDisplay('1')" class="num-btn">1</button>
+      <button (click)="addToDisplay('2')" class="num-btn">2</button>
+      <button (click)="addToDisplay('3')" class="num-btn">3</button>
+      <button (click)="addToDisplay('+')" class="func-btn btn-operator btn-plus">
+        <span>+</span>
+      </button>
+
+      <!-- Last Row -->
+      <button (click)="addToDisplay('0')" class="num-btn btn-zero">0</button>
+      <button (click)="addToDisplay('.')" class="num-btn btn-decimal">
+        <span>.</span>
+      </button>
+      <button (click)="calculate()" class="func-btn btn-equals">
+        <span>=</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <div class="calculator"> -->
+<!-- Display -->
+<!--   <div class="display">
+    <input 
+      type="text" 
+      [value]="display" 
+      readonly 
+      class="display-input"
+      placeholder="0">
+  </div> -->
+
+<!-- Mode Toggle -->
+<!--   <div class="mode-toggle">
+    <button 
+      (click)="toggleScientific()" 
+      class="mode-btn"
+      [class.active]="isScientific">
+      <i class="bi" [class.bi-calculator]="!isScientific" [class.bi-graph-up]="isScientific"></i>
+      {{ isScientific ? 'Scientific' : 'Basic' }}
+    </button>
+  </div> -->
+
+<!-- Calculator Keypad -->
+<!-- <div class="keypad"> -->
+<!-- Scientific Functions -->
+<!--   <div class="scientific-functions" *ngIf="isScientific">
+      <button (click)="scientificFunction('sin')" class="sci-btn sci-trig">sin</button>
+      <button (click)="scientificFunction('cos')" class="sci-btn sci-trig">cos</button>
+      <button (click)="scientificFunction('tan')" class="sci-btn sci-trig">tan</button>
+      <button (click)="scientificFunction('log')" class="sci-btn sci-func">log</button>
+      <button (click)="scientificFunction('ln')" class="sci-btn sci-func">ln</button>
+      
+      <button (click)="scientificFunction('sqrt')" class="sci-btn sci-math">√</button>
+      <button (click)="scientificFunction('square')" class="sci-btn sci-math">x²</button>
+      <button (click)="scientificFunction('cube')" class="sci-btn sci-math">x³</button>
+      <button (click)="scientificFunction('pi')" class="sci-btn sci-const">π</button>
+      <button (click)="addToDisplay('(')" class="sci-btn sci-bracket">(</button>
+      <button (click)="addToDisplay(')')" class="sci-btn sci-bracket">)</button>
+    </div> -->
+
+<!-- Basic Keypad -->
+<!--  <div class="basic-keypad"> -->
+<!-- First Row -->
+<!--       <button (click)="clear()" class="func-btn btn-clear">C</button>
+      <button (click)="backspace()" class="func-btn btn-backspace">⌫</button>
+      <button (click)="addToDisplay('%')" class="func-btn btn-operator">%</button>
+      <button (click)="addToDisplay('/')" class="func-btn btn-operator">÷</button>
+       -->
+<!-- Number Rows -->
+<!--       <button (click)="addToDisplay('7')" class="num-btn">7</button>
+      <button (click)="addToDisplay('8')" class="num-btn">8</button>
+      <button (click)="addToDisplay('9')" class="num-btn">9</button>
+      <button (click)="addToDisplay('*')" class="func-btn btn-operator">×</button>
+      
+      <button (click)="addToDisplay('4')" class="num-btn">4</button>
+      <button (click)="addToDisplay('5')" class="num-btn">5</button>
+      <button (click)="addToDisplay('6')" class="num-btn">6</button>
+      <button (click)="addToDisplay('-')" class="func-btn btn-operator">−</button>
+      
+      <button (click)="addToDisplay('1')" class="num-btn">1</button>
+      <button (click)="addToDisplay('2')" class="num-btn">2</button>
+      <button (click)="addToDisplay('3')" class="num-btn">3</button>
+      <button (click)="addToDisplay('+')" class="func-btn btn-operator btn-plus">+</button> -->
+
+<!-- Last Row -->
+<!--       <button (click)="addToDisplay('0')" class="num-btn btn-zero">0</button>
+      <button (click)="addToDisplay('.')" class="num-btn btn-decimal">.</button>
+      <button (click)="calculate()" class="func-btn btn-equals">=</button> -->
+<!--     </div>
+  </div>
+</div> -->

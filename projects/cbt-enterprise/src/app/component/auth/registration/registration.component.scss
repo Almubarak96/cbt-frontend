@@ -1,0 +1,215 @@
+@import 'auth';
+
+// Wider registration card for desktop
+.auth-card.registration-card {
+  max-width: 700px; // Much wider for registration form
+  
+  @media (max-width: $breakpoint-md) {
+    max-width: 500px;
+  }
+  
+  @media (max-width: $breakpoint-sm) {
+    max-width: 100%;
+  }
+}
+
+// Form Section Styling (for multi-section forms)
+.form-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: $border-radius-md;
+  border-left: 4px solid $primary-color;
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: $font-weight-semibold;
+    color: $dark-color;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+
+    i {
+      color: $primary-color;
+    }
+  }
+}
+
+// Password Strength Indicator
+.password-strength {
+  .strength-bar {
+    height: 4px;
+    background: #e9ecef;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+
+    .strength-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+      width: 0%;
+
+      &.password-strength-weak {
+        background: #dc3545;
+        width: 33%;
+      }
+
+      &.password-strength-good {
+        background: #ffc107;
+        width: 66%;
+      }
+
+      &.password-strength-strong {
+        background: #198754;
+        width: 100%;
+      }
+    }
+  }
+
+  .strength-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+
+    &.password-strength-weak {
+      color: #dc3545;
+    }
+
+    &.password-strength-good {
+      color: #ffc107;
+    }
+
+    &.password-strength-strong {
+      color: #198754;
+    }
+  }
+}
+
+// Profile Image Upload
+.profile-image-upload {
+  .image-preview {
+    position: relative;
+    display: inline-block;
+
+    .preview-image {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid $primary-color;
+      box-shadow: $shadow-sm;
+    }
+
+    .btn-remove-image {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: $danger-color;
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: darken($danger-color, 10%);
+        transform: scale(1.1);
+      }
+    }
+  }
+
+  .file-upload-area {
+    &.has-image {
+      .upload-placeholder {
+        padding: 1rem;
+      }
+    }
+
+    .upload-placeholder {
+      border: 2px dashed #dee2e6;
+      border-radius: $border-radius-md;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #fafbfc;
+
+      &:hover {
+        border-color: $primary-color;
+        background: rgba($primary-color, 0.05);
+      }
+
+      i {
+        font-size: 2rem;
+        color: $primary-color;
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+
+      .upload-text {
+        display: block;
+        font-weight: $font-weight-semibold;
+        color: $dark-color;
+        margin-bottom: 0.25rem;
+      }
+
+      small {
+        font-size: 0.8rem;
+      }
+    }
+  }
+}
+
+// Terms Note
+.terms-note {
+  border-left: 3px solid $primary-color;
+  
+  small {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  a {
+    text-decoration: none;
+    font-weight: $font-weight-semibold;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: $breakpoint-md) {
+  .form-section {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .profile-image-upload {
+    .image-preview {
+      .preview-image {
+        width: 100px;
+        height: 100px;
+      }
+    }
+
+    .file-upload-area .upload-placeholder {
+      padding: 1.5rem;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .auth-card {
+    .card-body {
+      padding: 1.5rem;
+    }
+  }
+}

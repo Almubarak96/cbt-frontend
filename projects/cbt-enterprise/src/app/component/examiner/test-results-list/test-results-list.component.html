@@ -1,0 +1,324 @@
+<div class="test-results-management-container">
+  <!-- Header Section -->
+  <div class="management-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="header-title">
+          <i class="bi bi-graph-up me-2"></i>
+          Test Results & Analytics
+        </h1>
+        <p class="header-subtitle">Monitor and analyze test performance metrics</p>
+      </div>
+      
+      <!-- Quick Stats -->
+      <div class="header-stats">
+        <div class="stat-item">
+          <div class="stat-number">{{ totalElements || 0 }}</div>
+          <div class="stat-label">Total Tests</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-success">{{ getAverageCompletionRate() | number:'1.0-0' }}%</div>
+          <div class="stat-label">Avg Completion</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-primary">{{ getAverageScore() | number:'1.1-1' }}%</div>
+          <div class="stat-label">Avg Score</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <!-- Search & Filters -->
+      <div class="filters-section">
+        <!-- Search Box -->
+        <div class="search-container">
+          <div class="input-group search-input-group">
+            <span class="input-group-text">
+              <i class="bi bi-search"></i>
+            </span>
+            <input type="text" 
+                   class="form-control" 
+                   placeholder="Search tests..." 
+                   [(ngModel)]="searchTerm"
+                   (input)="onSearch($event)">
+            <button *ngIf="searchTerm" 
+                    class="btn btn-outline-secondary btn-clear" 
+                    type="button" 
+                    (click)="clearSearch()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="filter-group">
+          <label class="filter-label">Filter by Status:</label>
+          <div class="status-filter-buttons">
+            <button type="button" 
+                    class="btn btn-filter-status" 
+                    [class.active]="statusFilter === 'all'"
+                    (click)="setStatusFilter('all')">
+              <span class="filter-dot all"></span>
+              All Tests
+              <span class="filter-count">{{ totalElements || 0 }}</span>
+            </button>
+            
+            <button type="button" 
+                    class="btn btn-filter-status" 
+                    [class.active]="statusFilter === 'published'"
+                    (click)="setStatusFilter('published')">
+              <span class="filter-dot published"></span>
+              Published
+              <span class="filter-count">{{ getPublishedCount() }}</span>
+            </button>
+            
+            <button type="button" 
+                    class="btn btn-filter-status" 
+                    [class.active]="statusFilter === 'draft'"
+                    (click)="setStatusFilter('draft')">
+              <span class="filter-dot draft"></span>
+              Drafts
+              <span class="filter-count">{{ getDraftCount() }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <div class="page-size-selector">
+          <label class="form-label-sm mb-0">Show:</label>
+          <select class="form-select form-select-sm" 
+                  [(ngModel)]="pageSize" 
+                  (change)="onPageSizeChange()">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+
+        <div class="primary-actions">
+          <button class="btn btn-outline-primary btn-sm" (click)="exportResults()">
+            <i class="bi bi-download me-1"></i>
+            Export
+          </button>
+          
+          <button class="btn btn-outline-secondary btn-sm" (click)="refreshResults()">
+            <i class="bi bi-arrow-clockwise me-1"></i>
+            Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="error-container">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <div>
+          <h6 class="alert-heading mb-1">Unable to Load Results</h6>
+          <p class="mb-0">{{ errorMessage }}</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="loading-text">Loading test results...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && !errorMessage" class="main-content">
+    <!-- Empty State -->
+    <div *ngIf="testResults.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-graph-up"></i>
+      </div>
+      <h3>No Test Results Found</h3>
+      <p class="text-muted">
+        {{ hasActiveFilters() ? 'No test results match your search criteria.' : 'Test results will appear here once students complete their exams.' }}
+      </p>
+      <div class="empty-actions">
+        <button *ngIf="hasActiveFilters()" (click)="clearFilters()" class="btn btn-outline-primary me-2">
+          Clear Filters
+        </button>
+        <button (click)="refreshResults()" class="btn btn-primary">
+          <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Results Grid -->
+    <div *ngIf="testResults.length > 0" class="results-grid">
+      <div *ngFor="let test of testResults" class="result-card">
+        <div class="result-card-header">
+          <div class="test-info">
+            <h5 class="test-title">{{ test.testTitle }}</h5>
+            <div class="test-meta">
+              <span class="test-id">#{{ test.testId }}</span>
+              <span class="meta-separator">•</span>
+              <span class="test-duration">{{ test.durationMinutes }} min</span>
+              <span class="meta-separator">•</span>
+              <span class="test-marks">{{ test.totalMarks }} marks</span>
+              <span *ngIf="test.passingScore > 0" class="test-passing">
+                <span class="meta-separator">•</span>
+                Pass: {{ test.passingScore }}%
+              </span>
+            </div>
+          </div>
+          <div class="test-status" [ngClass]="test.published ? 'status-published' : 'status-draft'">
+            {{ test.published ? 'Published' : 'Draft' }}
+          </div>
+        </div>
+
+        <div class="result-card-body">
+          <!-- Student Statistics -->
+          <div class="stats-section">
+            <div class="stat-row">
+              <div class="stat-item">
+                <div class="stat-value">{{ test.totalStudents }}</div>
+                <div class="stat-label">Total Students</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value text-success">{{ test.completedStudents }}</div>
+                <div class="stat-label">Completed</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" [ngClass]="'text-' + getScoreColor(test.averageScore)">
+                  {{ test.averageScore | number:'1.1-1' }}%
+                </div>
+                <div class="stat-label">Avg Score</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" [ngClass]="'text-' + getPassRateColor(test.passRate)">
+                  {{ test.passRate | number:'1.1-1' }}%
+                </div>
+                <div class="stat-label">Pass Rate</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Bars -->
+          <div class="progress-section">
+            <div class="progress-item">
+              <label>Completion Rate</label>
+              <div class="progress-bar-container">
+                <div class="progress-bar">
+                  <div class="progress-fill completion" [style.width.%]="getCompletionRate(test)"></div>
+                </div>
+                <span class="progress-value">{{ getCompletionRate(test) | number:'1.1-1' }}%</span>
+              </div>
+            </div>
+            
+            <div class="progress-item">
+              <label>Pass Rate</label>
+              <div class="progress-bar-container">
+                <div class="progress-bar">
+                  <div class="progress-fill pass-rate" [style.width.%]="test.passRate"></div>
+                </div>
+                <span class="progress-value">{{ test.passRate | number:'1.1-1' }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-card-footer">
+          <div class="action-buttons-grid">
+            <button (click)="viewStudentResults(test.testId)" 
+                    class="btn btn-action btn-outline-primary"
+                    title="View Student Results">
+              <i class="bi bi-people"></i>
+              <span>Students</span>
+            </button>
+            
+            <button (click)="viewAnalytics(test.testId)" 
+                    class="btn btn-action btn-outline-info"
+                    title="View Analytics">
+              <i class="bi bi-graph-up"></i>
+              <span>Analytics</span>
+            </button>
+            
+            <button (click)="exportTestResults(test.testId)" 
+                    class="btn btn-action btn-outline-success"
+                    title="Export Results">
+              <i class="bi bi-download"></i>
+              <span>Export</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- Pagination Section -->
+<div *ngIf="testResults.length > 0" class="pagination-section">
+  <div class="pagination-info">
+    Showing <strong>{{ startIndex }}</strong> to <strong>{{ endIndex }}</strong> 
+    of <strong>{{ totalElements }}</strong> test results
+  </div>
+  
+  <nav class="pagination-nav">
+    <ul class="pagination">
+      <!-- First Page -->
+      <li class="page-item" [class.disabled]="currentPage === 0">
+        <a class="page-link" (click)="changePage(0)" aria-label="First" 
+           [class.disabled]="currentPage === 0">
+          <i class="bi bi-chevron-double-left"></i>
+        </a>
+      </li>
+      
+      <!-- Previous Page -->
+      <li class="page-item" [class.disabled]="currentPage === 0">
+        <a class="page-link" (click)="changePage(currentPage - 1)" aria-label="Previous"
+           [class.disabled]="currentPage === 0">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+      </li>
+
+      <!-- Page Numbers -->
+      <ng-container *ngFor="let page of getVisiblePages()">
+        <!-- Regular Page Number -->
+        <li *ngIf="page >= 0" 
+            class="page-item" 
+            [class.active]="page === currentPage">
+          <a class="page-link" (click)="changePage(page)">
+            {{ page + 1 }}
+          </a>
+        </li>
+        
+        <!-- Ellipsis -->
+        <li *ngIf="page === -1 || page === -2" class="page-item disabled">
+          <span class="page-link">...</span>
+        </li>
+      </ng-container>
+
+      <!-- Next Page -->
+      <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+        <a class="page-link" (click)="changePage(currentPage + 1)" aria-label="Next"
+           [class.disabled]="currentPage >= totalPages - 1">
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </li>
+      
+      <!-- Last Page -->
+      <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+        <a class="page-link" (click)="changePage(totalPages - 1)" aria-label="Last"
+           [class.disabled]="currentPage >= totalPages - 1">
+          <i class="bi bi-chevron-double-right"></i>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
+  </div>
+</div>

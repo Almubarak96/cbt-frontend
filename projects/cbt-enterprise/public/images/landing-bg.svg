@@ -1,0 +1,13 @@
+<svg viewBox="0 0 1440 720" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gAccent" x1="0" x2="1">
+      <stop offset="0%" stop-color="#0d6efd" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#4ea1ff" stop-opacity="0.85" />
+    </linearGradient>
+  </defs>
+
+  <!-- Decorative crescents -->
+  <path d="M0,220 C260,360 480,100 900,260 C1250,390 1440,350 1440,350 L1440,720 L0,720 Z" fill="#f6f9ff" />
+  <path d="M0,140 C320,60 540,340 920,220 C1260,120 1440,170 1440,170 L1440,720 L0,720 Z" fill="url(#gAccent)" opacity="0.10" />
+  <path d="M0,90 C280,10 600,200 980,120 C1320,40 1440,90 1440,90 L1440,720 L0,720 Z" fill="url(#gAccent)" opacity="0.18" />
+</svg>

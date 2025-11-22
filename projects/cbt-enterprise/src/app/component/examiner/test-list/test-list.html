@@ -1,0 +1,372 @@
+<!-- 
+  TEST MANAGEMENT TEMPLATE
+  @author Almubarak Suleiman
+  Responsive, accessible, and optimized for performance
+-->
+<div class="test-management-container" role="main" aria-label="Test Management">
+
+  <!-- HEADER SECTION -->
+  <header class="management-header" role="banner">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="header-title" id="page-title">
+          <i class="bi bi-card-checklist me-2" aria-hidden="true"></i>
+          Test Management
+        </h1>
+        <p class="header-subtitle" aria-describedby="page-title">
+          Manage and organize your examination tests efficiently
+        </p>
+      </div>
+
+      <!-- QUICK STATS -->
+      <div class="header-stats" role="status" aria-live="polite">
+        <div class="stat-item">
+          <div class="stat-number" [attr.aria-label]="'Total tests: ' + (totalItems || 0)">
+            {{ totalItems || 0 }}
+          </div>
+          <div class="stat-label">Total Tests</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-success" 
+               [attr.aria-label]="'Published tests: ' + getPublishedCount()">
+            {{ getPublishedCount() }}
+          </div>
+          <div class="stat-label">Published</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-warning" 
+               [attr.aria-label]="'Draft tests: ' + getDraftCount()">
+            {{ getDraftCount() }}
+          </div>
+          <div class="stat-label">Drafts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTION BAR -->
+    <div class="action-bar" role="toolbar" aria-label="Test actions">
+      <!-- SEARCH & FILTERS -->
+      <div class="filters-section">
+        <!-- SEARCH BOX -->
+        <div class="search-container">
+          <label for="test-search" class="visually-hidden">Search tests</label>
+          <div class="input-group search-input-group">
+            <span class="input-group-text" id="search-icon">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </span>
+            <input 
+              id="test-search"
+              type="text" 
+              class="form-control" 
+              placeholder="Search tests by title or description..."
+              [value]="searchTerm"
+              (input)="onSearch($event)"
+              aria-describedby="search-icon">
+            <button *ngIf="searchTerm" 
+                    class="btn btn-outline-secondary btn-clear" 
+                    type="button"
+                    (click)="clearSearch()"
+                    aria-label="Clear search">
+              <i class="bi bi-x" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- STATUS FILTER -->
+        <div class="filter-group">
+          <label class="filter-label" id="status-filter-label">Filter by Status:</label>
+          <div class="status-filter-buttons" role="group" aria-labelledby="status-filter-label">
+            <button type="button" 
+                    class="btn btn-filter-status" 
+                    [class.active]="statusFilter === 'all'"
+                    (click)="filterByStatus('all')"
+                    aria-pressed="statusFilter === 'all'">
+              <span class="filter-dot all" aria-hidden="true"></span>
+              All
+              <span class="filter-count">{{ totalItems || 0 }}</span>
+            </button>
+
+            <button type="button" 
+                    class="btn btn-filter-status" 
+                    [class.active]="statusFilter === true"
+                    (click)="filterByStatus(true)"
+                    aria-pressed="statusFilter === true">
+              <span class="filter-dot published" aria-hidden="true"></span>
+              Published
+              <span class="filter-count">{{ getPublishedCount() }}</span>
+            </button>
+
+            <button type="button" 
+                    class="btn btn-filter-status" 
+                    [class.active]="statusFilter === false"
+                    (click)="filterByStatus(false)"
+                    aria-pressed="statusFilter === false">
+              <span class="filter-dot draft" aria-hidden="true"></span>
+              Drafts
+              <span class="filter-count">{{ getDraftCount() }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="action-buttons">
+        <div class="page-size-selector">
+          <label for="page-size-select" class="form-label-sm mb-0">Show:</label>
+          <select id="page-size-select"
+                  class="form-select form-select-sm" 
+                  [(ngModel)]="pageSize" 
+                  (change)="onPageSizeChange()"
+                  aria-label="Items per page">
+            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+          </select>
+        </div>
+
+        <div class="primary-actions">
+          <button (click)="addTest()" 
+                  class="btn btn-primary btn-sm btn-create"
+                  aria-label="Create new test">
+            <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>
+            Create Test
+          </button>
+
+          <button class="btn btn-success btn-sm" 
+                  data-bs-toggle="modal" 
+                  data-bs-target="#uploadBulkModal"
+                  aria-label="Bulk upload tests">
+            <i class="bi bi-upload me-1" aria-hidden="true"></i>
+            Bulk Upload
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loading" 
+       class="loading-container" 
+       role="status" 
+       aria-live="polite"
+       aria-label="Loading tests">
+    <div class="loading-spinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading tests...</span>
+      </div>
+      <p class="loading-text">Loading tests...</p>
+    </div>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div *ngIf="error && !loading" 
+       class="error-container" 
+       role="alert" 
+       aria-live="assertive">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+        <div>
+          <h6 class="alert-heading mb-1">Unable to Load Tests</h6>
+          <p class="mb-0">{{ error }}</p>
+        </div>
+      </div>
+      <button type="button" 
+              class="btn-close" 
+              (click)="error = null" 
+              aria-label="Close error message"></button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main *ngIf="!loading && !error" class="main-content" role="main">
+    <!-- EMPTY STATE -->
+    <div *ngIf="paginatedTests.length === 0" 
+         class="empty-state" 
+         role="status" 
+         aria-live="polite">
+      <div class="empty-icon">
+        <i class="bi bi-file-text" aria-hidden="true"></i>
+      </div>
+      <h3>No Tests Found</h3>
+      <p class="text-muted">
+        {{ searchTerm ? 'No tests match your search criteria.' : 'Get started by creating your first test.' }}
+      </p>
+      <div class="empty-actions">
+        <button *ngIf="searchTerm" 
+                (click)="clearSearch()" 
+                class="btn btn-outline-primary me-2">
+          Clear Search
+        </button>
+        <button (click)="addTest()" class="btn btn-primary">
+          <i class="bi bi-plus-lg me-2" aria-hidden="true"></i>Create Test
+        </button>
+      </div>
+    </div>
+
+    <!-- TESTS GRID -->
+    <div *ngIf="paginatedTests.length > 0" class="tests-grid">
+      <div *ngFor="let test of paginatedTests; trackBy: trackByTestId" 
+           class="test-card">
+        <div class="test-card-header">
+          <div class="test-badge" 
+               [ngClass]="test.published ? 'badge-published' : 'badge-draft'"
+               [attr.aria-label]="test.published ? 'Published test' : 'Draft test'">
+            {{ test.published ? 'Published' : 'Draft' }}
+          </div>
+          <!-- <div class="test-id">#{{ test.id }}</div> -->
+        </div>
+
+        <div class="test-card-body">
+          <h5 class="test-title">{{ test.title }}</h5>
+          <p *ngIf="test.description" class="test-description">
+            {{ test.description }}
+          </p>
+
+          <div class="test-meta">
+            <div class="meta-item">
+              <i class="bi bi-clock" aria-hidden="true"></i>
+              <span>{{ test.durationMinutes }} min</span>
+            </div>
+            <div class="meta-item">
+              <i class="bi bi-star" aria-hidden="true"></i>
+              <span>{{ test.totalMarks }} marks</span>
+            </div>
+            <div class="meta-item">
+              <i class="bi bi-calendar" aria-hidden="true"></i>
+              <!-- <span>{{ formatDate(test.createdAt) }}</span> -->
+            </div>
+          </div>
+        </div>
+
+        <div class="test-card-footer">
+          <div class="action-buttons-grid">
+            <button (click)="manageQuestions(test)" 
+                    class="btn btn-action btn-outline-primary" 
+                    title="Manage Questions"
+                    attr.aria-label="Manage questions for test {{ test.title }}">
+              <i class="bi bi-patch-question" aria-hidden="true"></i>
+              <span>Questions</span>
+            </button>
+
+            <button (click)="manageInstructions(test)" 
+                    class="btn btn-action btn-outline-info"
+                    title="Manage Instructions"
+                    attr.aria-label="Manage instructions for test {{ test.title }}">
+              <i class="bi bi-card-text" aria-hidden="true"></i>
+              <span>Instructions</span>
+            </button>
+
+            <button (click)="editTest(test)" 
+                    class="btn btn-action btn-outline-secondary" 
+                    title="Edit Test"
+                    attr.aria-label="Edit test {{ test.title }}">
+              <i class="bi bi-pencil" aria-hidden="true"></i>
+              <span>Edit</span>
+            </button>
+
+            <a [routerLink]="['/examiner/tests', test.id, 'enroll']" 
+               class="btn btn-action btn-outline-warning"
+               title="Enroll Students"
+               attr.aria-label="Enroll students for test {{ test.title }}">
+              <i class="bi bi-person-plus" aria-hidden="true"></i>
+              <span>Enroll</span>
+            </a>
+
+            <a [routerLink]="['/examiner/tests', test.id, 'analytics']" 
+               class="btn btn-action btn-outline-success"
+               title="Analytics"
+               attr.aria-label="View analytics for test {{ test.title }}">
+              <i class="bi bi-bar-chart" aria-hidden="true"></i>
+              <span>Analytics</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGINATION -->
+    <div *ngIf="paginatedTests.length > 0" class="pagination-section">
+      <div class="pagination-info" aria-live="polite">
+        Showing <strong>{{ startIndex }}</strong> to <strong>{{ endIndex }}</strong>
+        of <strong>{{ totalItems }}</strong> tests
+      </div>
+
+      <nav class="pagination-nav" aria-label="Test pagination">
+        <ul class="pagination">
+          <!-- First Page -->
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" 
+               (click)="changePage(0)" 
+               aria-label="Go to first page"
+               [attr.tabindex]="currentPage === 0 ? -1 : 0">
+              <i class="bi bi-chevron-double-left" aria-hidden="true"></i>
+            </a>
+          </li>
+
+          <!-- Previous Page -->
+          <li class="page-item" [class.disabled]="currentPage === 0">
+            <a class="page-link" 
+               (click)="changePage(currentPage - 1)" 
+               aria-label="Go to previous page"
+               [attr.tabindex]="currentPage === 0 ? -1 : 0">
+              <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </a>
+          </li>
+
+          <!-- Page Numbers -->
+          <li *ngFor="let page of getVisiblePages()" 
+              class="page-item" 
+              [class.active]="page === currentPage"
+              [attr.aria-current]="page === currentPage ? 'page' : null">
+            <a class="page-link" (click)="changePage(page)">
+              {{ page + 1 }}
+            </a>
+          </li>
+
+          <!-- Next Page -->
+          <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+            <a class="page-link" 
+               (click)="changePage(currentPage + 1)" 
+               aria-label="Go to next page"
+               [attr.tabindex]="currentPage === totalPages - 1 ? -1 : 0">
+              <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
+          </li>
+
+          <!-- Last Page -->
+          <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+            <a class="page-link" 
+               (click)="changePage(totalPages - 1)" 
+               aria-label="Go to last page"
+               [attr.tabindex]="currentPage === totalPages - 1 ? -1 : 0">
+              <i class="bi bi-chevron-double-right" aria-hidden="true"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </main>
+</div>
+
+<!-- UPLOAD BULK MODAL -->
+<div class="modal fade" 
+     id="uploadBulkModal" 
+     tabindex="-1" 
+     aria-labelledby="uploadBulkModalLabel" 
+     aria-hidden="true">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="uploadBulkModalLabel">
+          <i class="bi bi-upload me-2" aria-hidden="true"></i>Bulk Upload Tests
+        </h5>
+        <button type="button" 
+                class="btn-close btn-close-white" 
+                data-bs-dismiss="modal" 
+                aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <test-upload (uploadComplete)="onUploadComplete()"></test-upload>
+      </div>
+    </div>
+  </div>
+</div>

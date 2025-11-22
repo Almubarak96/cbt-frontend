@@ -1,0 +1,1159 @@
+<!-- 
+
+<div class="form-container">
+  <div class="form-card">
+    <div class="card-body">
+      <form [formGroup]="questionForm" (ngSubmit)="onSubmit()" class="form-unified">
+        
+     
+        <div class="form-header">
+          <div class="form-icon">
+            <i class="bi bi-patch-question"></i>
+          </div>
+          <h2 class="form-title">{{ isEdit ? 'Edit Question' : 'Create New Question' }}</h2>
+          <p class="form-subtitle">
+            {{ isEdit ? 'Update the question details below.' : 'Fill in the details to add a new question.' }}
+          </p>
+        </div>
+
+      
+        <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {{ error }}
+          <button type="button" class="btn-close" (click)="error = null"></button>
+        </div>
+
+   
+        <div class="form-content">
+          
+       
+          <div class="form-section">
+            <h5 class="section-title">
+              <i class="bi bi-info-circle me-2"></i>
+              Basic Information
+            </h5>
+            
+            <div class="row">
+              <div class="col-12 mb-3">
+                <label class="form-label required">Question Type</label>
+                <select formControlName="type" 
+                        class="form-select"
+                        [class.is-invalid]="isFieldInvalid('type')">
+                  <option *ngFor="let t of questionTypes" [value]="t">
+                    {{ formatQuestionType(t) }}
+                  </option>
+                </select>
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('type')">
+                  {{ getFieldError('type') }}
+                </div>
+              </div>
+
+              <div class="col-12 mb-3">
+                <label class="form-label required">Question Text</label>
+                <textarea class="form-control" 
+                          rows="3"
+                          [class.is-invalid]="isFieldInvalid('text')"
+                          formControlName="text" 
+                          placeholder="Enter your question here..."></textarea>
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('text')">
+                  {{ getFieldError('text') }}
+                </div>
+              </div>
+
+              <div class="col-12 mb-3">
+                <label class="form-label required">Maximum Marks</label>
+                <input type="number" 
+                       class="form-control" 
+                       [class.is-invalid]="isFieldInvalid('maxMarks')"
+                       formControlName="maxMarks"
+                       min="0.1"
+                       step="0.5">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('maxMarks')">
+                  {{ getFieldError('maxMarks') }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h5 class="section-title">
+              <i class="bi bi-file-earmark-medical me-2"></i>
+              Media Attachment
+            </h5>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Media Type</label>
+                <select formControlName="mediaType" class="form-select">
+                  <option *ngFor="let mt of mediaTypes" [value]="mt">
+                    {{ mt === 'NONE' ? 'No Media' : mt.toLowerCase() }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="col-md-6 mb-3" *ngIf="questionForm.value.mediaType !== 'NONE'">
+                <label class="form-label required">Media Path/URL</label>
+                <input type="text" 
+                       class="form-control" 
+                       [class.is-invalid]="isFieldInvalid('mediaPath')"
+                       formControlName="mediaPath"
+                       placeholder="Enter file path or URL">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('mediaPath')">
+                  {{ getFieldError('mediaPath') }}
+                </div>
+              </div>
+
+              <div class="col-12 mb-3" *ngIf="questionForm.value.mediaType !== 'NONE'">
+                <label class="form-label required">Media Caption</label>
+                <input type="text" 
+                       class="form-control" 
+                       [class.is-invalid]="isFieldInvalid('mediaCaption')"
+                       formControlName="mediaCaption"
+                       placeholder="Enter media description">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('mediaCaption')">
+                  {{ getFieldError('mediaCaption') }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="form-section" *ngIf="questionForm.value.type !== 'MATCHING'">
+            <h5 class="section-title">
+              <i class="bi bi-check-circle me-2"></i>
+              Answer Configuration
+            </h5>
+ 
+<div *ngIf="questionForm.value.type === 'MULTIPLE_CHOICE'">
+  <div class="mb-4">
+    <label class="form-label required">Options</label>
+    <div formArrayName="optionsArray" class="options-container">
+      <div *ngFor="let option of optionsArray.controls; let i = index" 
+           class="option-item mb-2">
+        <div class="input-group">
+          <span class="input-group-text">{{ getOptionLetter(i) }}</span>
+          <input type="text" 
+                 [formControlName]="i"
+                 class="form-control" 
+                 placeholder="Enter option text"
+                 (blur)="onOptionChange()">
+          <button type="button" 
+                  class="btn btn-outline-danger" 
+                  (click)="removeOption(i)"
+                  [disabled]="optionsArray.length <= 1">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+        <div class="invalid-feedback d-block" 
+             *ngIf="option.invalid && option.touched">
+          Option text is required
+        </div>
+      </div>
+    </div>
+    <button type="button" 
+            class="btn btn-outline-primary btn-sm mt-2"
+            (click)="addOption()">
+      <i class="bi bi-plus-circle me-2"></i>Add Option
+    </button>
+  </div>
+
+  <div class="mb-3" *ngIf="mcqOptions.length > 0">
+    <label class="form-label required">Select Correct Answer</label>
+    <div class="correct-answers-grid">
+      <div *ngFor="let option of mcqOptions; let i = index" 
+           class="answer-option">
+        <input type="radio" 
+               [id]="'mcqOption_' + i"
+               name="correctAnswer" 
+               [value]="option"
+               [checked]="isAnswerSelected(option)"
+               (change)="onCorrectAnswerSelect(option)"
+               class="btn-check">
+        <label [for]="'mcqOption_' + i" 
+               class="btn btn-outline-success answer-label">
+          <span class="option-letter">{{ getOptionLetter(i) }}</span>
+          <span class="option-text">{{ option }}</span>
+        </label>
+      </div>
+    </div>
+    <div class="invalid-feedback d-block" 
+         *ngIf="isFieldInvalid('correctAnswer') || questionForm.errors?.['invalidCorrectAnswer']">
+      {{ getFieldError('correctAnswer') }}
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="questionForm.value.type === 'MULTIPLE_SELECT'">
+  <div class="mb-4">
+    <label class="form-label required">Options</label>
+    <div formArrayName="optionsArray" class="options-container">
+      <div *ngFor="let option of optionsArray.controls; let i = index" 
+           class="option-item mb-2">
+        <div class="input-group">
+          <span class="input-group-text">{{ getOptionLetter(i) }}</span>
+          <input type="text" 
+                 [formControlName]="i"
+                 class="form-control" 
+                 placeholder="Enter option text"
+                 (blur)="onOptionChange()">
+          <button type="button" 
+                  class="btn btn-outline-danger" 
+                  (click)="removeOption(i)"
+                  [disabled]="optionsArray.length <= 1">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+        <div class="invalid-feedback d-block" 
+             *ngIf="option.invalid && option.touched">
+          Option text is required
+        </div>
+      </div>
+    </div>
+    <button type="button" 
+            class="btn btn-outline-primary btn-sm mt-2"
+            (click)="addOption()">
+      <i class="bi bi-plus-circle me-2"></i>Add Option
+    </button>
+  </div>
+
+  <div class="mb-3" *ngIf="mcqOptions.length > 0">
+    <label class="form-label required">Select Correct Answers</label>
+    <div class="correct-answers-grid">
+      <div *ngFor="let option of mcqOptions; let i = index" 
+           class="answer-option">
+        <input type="checkbox" 
+               [id]="'msqOption_' + i"
+               [checked]="isAnswerSelected(option)"
+               (change)="onMultipleAnswerToggle(option)"
+               class="btn-check">
+        <label [for]="'msqOption_' + i" 
+               class="btn btn-outline-primary answer-label">
+          <i class="bi" [class.bi-check-lg]="isAnswerSelected(option)" 
+             [class.bi-dash]="!isAnswerSelected(option)" class="me-2"></i>
+          <span class="option-letter">{{ getOptionLetter(i) }}</span>
+          <span class="option-text">{{ option }}</span>
+        </label>
+      </div>
+    </div>
+    <div class="invalid-feedback d-block" 
+         *ngIf="isFieldInvalid('selectedCorrectAnswers') || questionForm.errors?.['invalidCorrectAnswers']">
+      {{ getFieldError('selectedCorrectAnswers') }}
+    </div>
+    <small class="form-text text-muted">
+      Select all correct answers (multiple selections allowed)
+    </small>
+  </div>
+</div>
+
+            
+            <div *ngIf="questionForm.value.type === 'TRUE_FALSE'">
+              <label class="form-label required d-block">Select Correct Answer</label>
+              <div class="btn-group w-100" role="group">
+                <input type="radio" 
+                       class="btn-check" 
+                       name="trueFalse" 
+                       id="trueOpt" 
+                       formControlName="correctAnswer" 
+                       [value]="'True'">
+                <label class="btn btn-outline-success" for="trueOpt">
+                  <i class="bi bi-check-lg me-2"></i>True
+                </label>
+
+                <input type="radio" 
+                       class="btn-check" 
+                       name="trueFalse" 
+                       id="falseOpt" 
+                       formControlName="correctAnswer" 
+                       [value]="'False'">
+                <label class="btn btn-outline-danger" for="falseOpt">
+                  <i class="bi bi-x-lg me-2"></i>False
+                </label>
+              </div>
+              <div class="invalid-feedback d-block" *ngIf="isFieldInvalid('correctAnswer')">
+                {{ getFieldError('correctAnswer') }}
+              </div>
+            </div>
+
+          
+            <div *ngIf="questionForm.value.type === 'FILL_IN_THE_BLANK'">
+              <div class="mb-3">
+                <label class="form-label required">Correct Answer</label>
+                <input type="text" 
+                       class="form-control" 
+                       [class.is-invalid]="isFieldInvalid('correctAnswer')"
+                       formControlName="correctAnswer"
+                       placeholder="Enter the expected answer">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('correctAnswer')">
+                  {{ getFieldError('correctAnswer') }}
+                </div>
+              </div>
+            </div>
+
+            
+            <div *ngIf="questionForm.value.type === 'ESSAY'">
+              <div class="mb-3">
+                <label class="form-label required">Expected Answer / Guidelines</label>
+                <textarea rows="4" 
+                          class="form-control" 
+                          [class.is-invalid]="isFieldInvalid('correctAnswer')"
+                          formControlName="correctAnswer"
+                          placeholder="Provide guidelines or expected answer for grading"></textarea>
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('correctAnswer')">
+                  {{ getFieldError('correctAnswer') }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+        
+          <div class="form-section" *ngIf="questionForm.value.type === 'MATCHING'">
+            <h5 class="section-title">
+              <i class="bi bi-arrow-left-right me-2"></i>
+              Matching Pairs
+            </h5>
+            
+            <div formArrayName="matchingPairs">
+              <div *ngFor="let pair of matchingPairs.controls; let i = index" 
+                   [formGroupName]="i" 
+                   class="matching-pair-item">
+                <div class="row g-2 align-items-center">
+                  <div class="col-md-5">
+                    <input type="text" 
+                           class="form-control" 
+                           [class.is-invalid]="pair.get('leftText')?.invalid && pair.get('leftText')?.touched"
+                           formControlName="leftText"
+                           placeholder="Left item">
+                  </div>
+                  <div class="col-md-1 text-center">
+                    <i class="bi bi-arrow-right text-muted"></i>
+                  </div>
+                  <div class="col-md-5">
+                    <input type="text" 
+                           class="form-control" 
+                           [class.is-invalid]="pair.get('rightText')?.invalid && pair.get('rightText')?.touched"
+                           formControlName="rightText"
+                           placeholder="Right item">
+                  </div>
+                  <div class="col-md-1">
+                    <button type="button" 
+                            class="btn btn-outline-danger btn-sm w-100" 
+                            (click)="removePair(i)"
+                            title="Remove pair">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" 
+                    class="btn btn-outline-primary btn-sm mt-3" 
+                    (click)="addPair()">
+              <i class="bi bi-plus-circle me-2"></i>Add Matching Pair
+            </button>
+
+            <div class="invalid-feedback d-block" *ngIf="matchingPairs.invalid && matchingPairs.touched">
+              At least one matching pair is required.
+            </div>
+          </div>
+        </div>
+
+      
+        <div class="form-actions">
+          <button type="button" 
+                  class="btn btn-outline-secondary" 
+                  (click)="router.navigate(['/examiner/tests', testId, 'questions'])">
+            <i class="bi bi-arrow-left me-2"></i>
+            Cancel
+          </button>
+          <button type="submit" 
+                  class="btn btn-primary" 
+                  [disabled]="questionForm.invalid || isLoading">
+            <i class="bi" [class.bi-check-lg]="!isLoading" [class.bi-arrow-repeat]="isLoading"></i>
+            {{ isLoading ? 'Saving...' : (isEdit ? 'Update Question' : 'Create Question') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div> -->
+
+
+
+
+
+
+
+
+
+
+
+<div class="form-container">
+  <div class="form-card">
+    <div class="card-body">
+      <form [formGroup]="questionForm" (ngSubmit)="onSubmit()" class="form-unified" enctype="multipart/form-data">
+        
+        <!-- Header Section -->
+        <div class="form-header">
+          <div class="form-icon">
+            <i class="bi bi-patch-question"></i>
+          </div>
+          <h2 class="form-title">{{ isEdit ? 'Edit Question' : 'Create New Question' }}</h2>
+          <p class="form-subtitle">
+            {{ isEdit ? 'Update your question details below.' : 'Follow the steps to create a comprehensive question.' }}
+          </p>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+          <div class="step-indicator">
+            <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1" (click)="goToStep(1)">
+              <div class="step-number">1</div>
+              <span class="step-label">Basic Info</span>
+            </div>
+            <div class="step-connector" [class.completed]="currentStep > 1"></div>
+            <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2" (click)="goToStep(2)">
+              <div class="step-number">2</div>
+              <span class="step-label">Content</span>
+            </div>
+            <div class="step-connector" [class.completed]="currentStep > 2"></div>
+            <div class="step" [class.active]="currentStep === 3" [class.completed]="currentStep > 3" (click)="goToStep(3)">
+              <div class="step-number">3</div>
+              <span class="step-label">Media & Advanced</span>
+            </div>
+            <div class="step-connector" [class.completed]="currentStep > 3"></div>
+            <div class="step" [class.active]="currentStep === 4" (click)="goToStep(4)">
+              <div class="step-number">4</div>
+              <span class="step-label">Review</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Alert -->
+        <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {{ error }}
+          <button type="button" class="btn-close" (click)="error = null"></button>
+        </div>
+
+        <!-- Step 1: Basic Information -->
+        <div *ngIf="currentStep === 1" class="form-step">
+          <div class="form-section">
+            <h5 class="section-title">
+              <i class="bi bi-info-circle me-2"></i>
+              Basic Information
+            </h5>
+            
+            <div class="alert alert-info">
+              <i class="bi bi-lightbulb me-2"></i>
+              Start by selecting the question type and basic configuration. This will determine how the question is presented and evaluated.
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label required">Question Type</label>
+                <select formControlName="type" 
+                        class="form-select"
+                        [class.is-invalid]="isFieldInvalid('type')">
+                  <option value="">Select question type</option>
+                  <option *ngFor="let t of questionTypes" [value]="t">
+                    {{ formatQuestionType(t) }}
+                  </option>
+                </select>
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('type')">
+                  {{ getFieldError('type') }}
+                </div>
+                <small class="form-text text-muted">
+                  Choose how students will interact with this question
+                </small>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Difficulty Level</label>
+                <select formControlName="difficulty" class="form-select">
+                  <option *ngFor="let level of difficultyLevels" [value]="level">
+                    {{ level.charAt(0) + level.slice(1).toLowerCase() }}
+                  </option>
+                </select>
+                <small class="form-text text-muted">
+                  Used for adaptive testing and analytics
+                </small>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Category/Topic</label>
+                <input type="text" 
+                       class="form-control" 
+                       formControlName="category"
+                       placeholder="e.g., Algebra, History, Programming">
+                <small class="form-text text-muted">
+                  Organize questions by subject or topic
+                </small>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Question Order</label>
+                <input type="number" 
+                       class="form-control" 
+                       formControlName="questionOrder"
+                       [class.is-invalid]="isFieldInvalid('questionOrder')"
+                       min="1"
+                       placeholder="Optional">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('questionOrder')">
+                  {{ getFieldError('questionOrder') }}
+                </div>
+                <small class="form-text text-muted">
+                  Display order in test (lower numbers appear first)
+                </small>
+              </div>
+            </div>
+
+            <!-- Question Type Hints -->
+            <div class="question-type-hint" *ngIf="questionForm.get('type')?.value">
+              <div class="hint-title">
+                <i class="bi bi-info-circle me-2"></i>
+                {{ formatQuestionType(questionForm.get('type')?.value) }} Question
+              </div>
+              <p class="hint-text" [innerHTML]="getQuestionTypeHint(questionForm.get('type')?.value)"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Question Content -->
+        <div *ngIf="currentStep === 2" class="form-step">
+          <div class="form-section">
+            <h5 class="section-title">
+              <i class="bi bi-card-text me-2"></i>
+              Question Content
+            </h5>
+
+            <div class="row">
+              <div class="col-12 mb-3">
+                <label class="form-label required">Question Text</label>
+                <textarea class="form-control" 
+                          rows="4"
+                          [class.is-invalid]="isFieldInvalid('text')"
+                          formControlName="text" 
+                          placeholder="Enter your question here. You can use HTML formatting for rich content..."></textarea>
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('text')">
+                  {{ getFieldError('text') }}
+                </div>
+                <small class="form-text text-muted">
+                  Be clear and specific. Use **bold**, <em>italics</em>, or lists for better readability.
+                </small>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label required">Maximum Marks</label>
+                <input type="number" 
+                       class="form-control" 
+                       [class.is-invalid]="isFieldInvalid('maxMarks')"
+                       formControlName="maxMarks"
+                       min="0.1"
+                       step="0.5"
+                       placeholder="1.0">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('maxMarks')">
+                  {{ getFieldError('maxMarks') }}
+                </div>
+                <small class="form-text text-muted">
+                  Points awarded for correct answer
+                </small>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Allow Partial Credit</label>
+                <div class="form-check form-switch mt-2">
+                  <input class="form-check-input" type="checkbox" formControlName="allowPartialCredit" id="partialCredit">
+                  <label class="form-check-label" for="partialCredit">
+                    Enable partial scoring
+                  </label>
+                </div>
+                <small class="form-text text-muted">
+                  Award partial marks for partially correct answers
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Answer Configuration Section -->
+          <div class="form-section" *ngIf="questionForm.get('type')?.value && questionForm.get('type')?.value !== 'MATCHING'">
+            <h5 class="section-title">
+              <i class="bi bi-check-circle me-2"></i>
+              Answer Configuration
+            </h5>
+            
+            <!-- MULTIPLE_CHOICE -->
+            <div *ngIf="questionForm.get('type')?.value === 'MULTIPLE_CHOICE'">
+              <div class="mb-4">
+                <label class="form-label required">Options</label>
+                <div formArrayName="optionsArray" class="options-container">
+                  <div *ngFor="let option of optionsArray.controls; let i = index" 
+                       class="option-item mb-2">
+                    <div class="input-group">
+                      <span class="input-group-text">{{ getOptionLetter(i) }}</span>
+                      <input type="text" 
+                             [formControlName]="i"
+                             class="form-control" 
+                             placeholder="Enter option text"
+                             (blur)="onOptionChange()">
+                      <button type="button" 
+                              class="btn btn-outline-danger" 
+                              (click)="removeOption(i)"
+                              [disabled]="optionsArray.length <= 2"
+                              title="Remove option">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                    <div class="invalid-feedback d-block" 
+                         *ngIf="option.invalid && option.touched">
+                      Option text is required
+                    </div>
+                  </div>
+                </div>
+                <button type="button" 
+                        class="btn btn-outline-primary btn-sm mt-2"
+                        (click)="addOption()"
+                        [disabled]="optionsArray.length >= 6">
+                  <i class="bi bi-plus-circle me-2"></i>Add Option
+                </button>
+                <small class="form-text text-muted">
+                  Minimum 2 options, maximum 6 options
+                </small>
+              </div>
+
+              <div class="mb-3" *ngIf="mcqOptions.length > 0">
+                <label class="form-label required">Select Correct Answer</label>
+                <div class="correct-answers-grid">
+                  <div *ngFor="let option of mcqOptions; let i = index" 
+                       class="answer-option">
+                    <input type="radio" 
+                           [id]="'mcqOption_' + i"
+                           name="correctAnswer" 
+                           [value]="option"
+                           [checked]="isAnswerSelected(option)"
+                           (change)="onCorrectAnswerSelect(option)"
+                           class="btn-check">
+                    <label [for]="'mcqOption_' + i" 
+                           class="btn btn-outline-success answer-label">
+                      <span class="option-letter">{{ getOptionLetter(i) }}</span>
+                      <span class="option-text">{{ option }}</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="invalid-feedback d-block" 
+                     *ngIf="isFieldInvalid('correctAnswer')">
+                  Please select the correct answer
+                </div>
+              </div>
+            </div>
+
+        <!-- MULTIPLE_SELECT -->
+<div *ngIf="questionForm.get('type')?.value === 'MULTIPLE_SELECT'">
+  <div class="mb-4">
+    <label class="form-label required">Options</label>
+    <div formArrayName="optionsArray" class="options-container">
+      <div *ngFor="let option of optionsArray.controls; let i = index" 
+           class="option-item mb-2">
+        <div class="input-group">
+          <span class="input-group-text">{{ getOptionLetter(i) }}</span>
+          <input type="text" 
+                 [formControlName]="i"
+                 class="form-control" 
+                 placeholder="Enter option text"
+                 (blur)="onOptionChange()">
+          <button type="button" 
+                  class="btn btn-outline-danger" 
+                  (click)="removeOption(i)"
+                  [disabled]="optionsArray.length <= 2"
+                  title="Remove option">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+        <div class="invalid-feedback d-block" 
+             *ngIf="option.invalid && option.touched">
+          Option text is required
+        </div>
+      </div>
+    </div>
+    <button type="button" 
+            class="btn btn-outline-primary btn-sm mt-2"
+            (click)="addOption()"
+            [disabled]="optionsArray.length >= 6">
+      <i class="bi bi-plus-circle me-2"></i>Add Option
+    </button>
+    <small class="form-text text-muted">
+      Minimum 2 options, maximum 6 options
+    </small>
+  </div>
+
+  <div class="mb-3" *ngIf="mcqOptions.length > 0">
+    <label class="form-label required">Select Correct Answers</label>
+    <div class="correct-answers-grid">
+      <div *ngFor="let option of mcqOptions; let i = index" 
+           class="answer-option">
+        <input type="checkbox" 
+               [id]="'msqOption_' + i"
+               [checked]="isAnswerSelected(option)"
+               (change)="onMultipleAnswerToggle(option)"
+               class="btn-check">
+        <label [for]="'msqOption_' + i" 
+               class="btn btn-outline-primary answer-label">
+          <i class="bi" [class.bi-check-lg]="isAnswerSelected(option)" 
+             [class.bi-dash]="!isAnswerSelected(option)" class="me-2"></i>
+          <span class="option-letter">{{ getOptionLetter(i) }}</span>
+          <span class="option-text">{{ option }}</span>
+        </label>
+      </div>
+    </div>
+    
+    <!-- Enhanced Error Display -->
+    <div class="invalid-feedback d-block" 
+         *ngIf="(selectedCorrectAnswers.length === 0 && questionForm.get('correctAnswer')?.touched) || 
+                questionForm.errors?.['atLeastOneCorrectAnswer']">
+      Please select at least one correct answer
+    </div>
+    
+    <div class="invalid-feedback d-block" 
+         *ngIf="questionForm.errors?.['minOptionsRequired'] || questionForm.errors?.['minValidOptionsRequired']">
+      At least two valid options are required
+    </div>
+    
+    <small class="form-text text-muted">
+      Select all correct answers (multiple selections allowed)
+    </small>
+  </div>
+</div>
+
+            <!-- TRUE_FALSE -->
+            <div *ngIf="questionForm.get('type')?.value === 'TRUE_FALSE'">
+              <label class="form-label required d-block">Select Correct Answer</label>
+              <div class="btn-group w-100" role="group">
+                <input type="radio" 
+                       class="btn-check" 
+                       name="trueFalse" 
+                       id="trueOpt" 
+                       formControlName="correctAnswer" 
+                       [value]="'True'">
+                <label class="btn btn-outline-success" for="trueOpt">
+                  <i class="bi bi-check-lg me-2"></i>True
+                </label>
+
+                <input type="radio" 
+                       class="btn-check" 
+                       name="trueFalse" 
+                       id="falseOpt" 
+                       formControlName="correctAnswer" 
+                       [value]="'False'">
+                <label class="btn btn-outline-danger" for="falseOpt">
+                  <i class="bi bi-x-lg me-2"></i>False
+                </label>
+              </div>
+              <div class="invalid-feedback d-block" *ngIf="isFieldInvalid('correctAnswer')">
+                {{ getFieldError('correctAnswer') }}
+              </div>
+            </div>
+
+            <!-- FILL_IN_THE_BLANK -->
+            <div *ngIf="questionForm.get('type')?.value === 'FILL_IN_THE_BLANK'">
+              <div class="mb-3">
+                <label class="form-label required">Correct Answer</label>
+                <input type="text" 
+                       class="form-control" 
+                       [class.is-invalid]="isFieldInvalid('correctAnswer')"
+                       formControlName="correctAnswer"
+                       placeholder="Enter the expected answer">
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('correctAnswer')">
+                  {{ getFieldError('correctAnswer') }}
+                </div>
+                <small class="form-text text-muted">
+                  Students must type this exact answer (case-sensitive)
+                </small>
+              </div>
+            </div>
+
+            <!-- ESSAY -->
+            <div *ngIf="questionForm.get('type')?.value === 'ESSAY'">
+              <div class="mb-3">
+                <label class="form-label required">Expected Answer / Guidelines</label>
+                <textarea rows="6" 
+                          class="form-control" 
+                          [class.is-invalid]="isFieldInvalid('correctAnswer')"
+                          formControlName="correctAnswer"
+                          placeholder="Provide model answer, grading criteria, or guidelines for manual evaluation..."></textarea>
+                <div class="invalid-feedback" *ngIf="isFieldInvalid('correctAnswer')">
+                  {{ getFieldError('correctAnswer') }}
+                </div>
+                <small class="form-text text-muted">
+                  This will be used by graders to evaluate student responses
+                </small>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Explanation (Optional)</label>
+                <textarea rows="3" 
+                          class="form-control" 
+                          formControlName="explanation"
+                          placeholder="Additional context or explanation for graders..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Matching Pairs Section -->
+          <div class="form-section" *ngIf="questionForm.get('type')?.value === 'MATCHING'">
+            <h5 class="section-title">
+              <i class="bi bi-arrow-left-right me-2"></i>
+              Matching Pairs
+            </h5>
+            
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              Create pairs of items that students need to match. Left items will be presented in fixed order, right items will be shuffled.
+            </div>
+            
+            <div formArrayName="matchingPairs">
+              <div *ngFor="let pair of matchingPairs.controls; let i = index" 
+                   [formGroupName]="i" 
+                   class="matching-pair-item">
+                <div class="row g-2 align-items-center">
+                  <div class="col-md-5">
+                    <label class="form-label small">Left Item {{ i + 1 }}</label>
+                    <input type="text" 
+                           class="form-control" 
+                           [class.is-invalid]="pair.get('leftText')?.invalid && pair.get('leftText')?.touched"
+                           formControlName="leftText"
+                           placeholder="e.g., Capital of France">
+                  </div>
+                  <div class="col-md-1 text-center">
+                    <i class="bi bi-arrow-right text-muted mt-4"></i>
+                  </div>
+                  <div class="col-md-5">
+                    <label class="form-label small">Right Item {{ i + 1 }}</label>
+                    <input type="text" 
+                           class="form-control" 
+                           [class.is-invalid]="pair.get('rightText')?.invalid && pair.get('rightText')?.touched"
+                           formControlName="rightText"
+                           placeholder="e.g., Paris">
+                  </div>
+                  <div class="col-md-1">
+                    <label class="form-label small d-block">&nbsp;</label>
+                    <button type="button" 
+                            class="btn btn-outline-danger btn-sm w-100" 
+                            (click)="removePair(i)"
+                            [disabled]="matchingPairs.length <= 1"
+                            title="Remove pair">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" 
+                    class="btn btn-outline-primary btn-sm mt-3" 
+                    (click)="addPair()"
+                    [disabled]="matchingPairs.length >= 8">
+              <i class="bi bi-plus-circle me-2"></i>Add Matching Pair
+            </button>
+
+            <div class="invalid-feedback d-block" *ngIf="matchingPairs.invalid && matchingPairs.touched">
+              At least one matching pair is required.
+            </div>
+            <small class="form-text text-muted">
+              Minimum 1 pair, maximum 8 pairs
+            </small>
+          </div>
+
+          <!-- Explanation for all question types -->
+          <div class="form-section" *ngIf="questionForm.get('type')?.value !== 'ESSAY'">
+            <h5 class="section-title">
+              <i class="bi bi-lightbulb me-2"></i>
+              Explanation & Feedback
+            </h5>
+            
+            <div class="mb-3">
+              <label class="form-label">Explanation</label>
+              <textarea rows="3" 
+                        class="form-control" 
+                        formControlName="explanation"
+                        placeholder="Explain why the correct answer is right. This will be shown to students during review..."></textarea>
+              <small class="form-text text-muted">
+                Helps students understand the concept behind the question
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Media & Advanced Settings -->
+        <div *ngIf="currentStep === 3" class="form-step">
+          <div class="form-section">
+            <h5 class="section-title">
+              <i class="bi bi-file-earmark-medical me-2"></i>
+              Media Attachment
+            </h5>
+            
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              Enhance your question with images, videos, or audio. You can upload files or use external URLs.
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Media Type</label>
+                <select formControlName="mediaType" class="form-select">
+                  <option *ngFor="let mt of mediaTypes" [value]="mt">
+                    {{ mt === 'NONE' ? 'No Media' : mt.charAt(0) + mt.slice(1).toLowerCase() }}
+                  </option>
+                </select>
+                <small class="form-text text-muted">
+                  Choose the type of media to attach
+                </small>
+              </div>
+
+              <div class="col-md-6 mb-3" *ngIf="questionForm.get('mediaType')?.value !== 'NONE'">
+                <label class="form-label">Time Limit (seconds)</label>
+                <input type="number" 
+                       class="form-control" 
+                       formControlName="timeLimitSeconds"
+                       min="1"
+                       placeholder="Optional">
+                <small class="form-text text-muted">
+                  Override test duration for this specific question
+                </small>
+              </div>
+            </div>
+
+            <!-- Media Upload/URL Section -->
+            <div *ngIf="questionForm.get('mediaType')?.value !== 'NONE'" class="media-upload-section">
+              <div class="row">
+                <div class="col-12 mb-3">
+                  <label class="form-label required">Media Source</label>
+                  
+                  <!-- File Upload Option -->
+                  <div class="upload-option mb-3">
+                    <label class="form-label d-block">Upload File</label>
+                    <div class="file-upload-area" 
+                         [class.active]="mediaFile"
+                         (click)="fileInput.click()">
+                      <div class="upload-placeholder" *ngIf="!mediaFile && !mediaPreview">
+                        <i class="bi bi-cloud-upload display-4 text-muted"></i>
+                        <p class="mt-2 mb-1">Click to upload or drag and drop</p>
+                        <small class="text-muted">Supports images, videos, and audio files (max 50MB)</small>
+                      </div>
+                      
+                      <div class="upload-preview" *ngIf="mediaFile || mediaPreview">
+                        <div class="preview-content">
+                          <img *ngIf="mediaPreview && questionForm.get('mediaType')?.value === 'IMAGE'" 
+                               [src]="mediaPreview" 
+                               class="preview-image"
+                               alt="Media preview">
+                          <div *ngIf="questionForm.get('mediaType')?.value === 'VIDEO'" class="video-preview">
+                            <i class="bi bi-play-circle display-4 text-primary"></i>
+                            <p class="mt-2">{{ mediaFile?.name }}</p>
+                          </div>
+                          <div *ngIf="questionForm.get('mediaType')?.value === 'AUDIO'" class="audio-preview">
+                            <i class="bi bi-music-note-beamed display-4 text-primary"></i>
+                            <p class="mt-2">{{ mediaFile?.name }}</p>
+                          </div>
+                        </div>
+                        <div class="file-info">
+                          <strong>{{ mediaFile?.name }}</strong>
+                          <small class="text-muted d-block">{{ getMediaFileSizeMB() }} MB</small>
+                        </div>
+                        <button type="button" 
+                                class="btn btn-outline-danger btn-sm"
+                                (click)="removeMedia(); $event.stopPropagation()">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <input #fileInput type="file" 
+                           (change)="onMediaFileSelected($event)"
+                           [accept]="getAcceptFileTypes()"
+                           style="display: none">
+                  </div>
+
+                  <!-- URL Option -->
+                  <div class="url-option">
+                    <label class="form-label d-block">Or Use URL</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                      <input type="url" 
+                             class="form-control" 
+                             [class.is-invalid]="isFieldInvalid('mediaPath')"
+                             formControlName="mediaPath"
+                             placeholder="https://example.com/image.jpg"
+                             (focus)="useMediaURL()">
+                    </div>
+                    <div class="invalid-feedback" *ngIf="isFieldInvalid('mediaPath')">
+                      {{ getFieldError('mediaPath') }}
+                    </div>
+                    <small class="form-text text-muted">
+                      Enter a direct link to your media file
+                    </small>
+                  </div>
+                </div>
+
+                <div class="col-12 mb-3">
+                  <label class="form-label required">Media Caption</label>
+                  <input type="text" 
+                         class="form-control" 
+                         [class.is-invalid]="isFieldInvalid('mediaCaption')"
+                         formControlName="mediaCaption"
+                         placeholder="Describe the media for accessibility and context">
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('mediaCaption')">
+                    {{ getFieldError('mediaCaption') }}
+                  </div>
+                  <small class="form-text text-muted">
+                    This text helps visually impaired users and provides context
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Review & Save -->
+        <div *ngIf="currentStep === 4" class="form-step">
+          <div class="form-section">
+            <h5 class="section-title">
+              <i class="bi bi-eye me-2"></i>
+              Review Question
+            </h5>
+            
+            <div class="review-container">
+              <!-- Question Preview -->
+              <div class="question-preview">
+                <h6 class="preview-title">Question Preview</h6>
+                <div class="preview-content">
+                  <div class="preview-header">
+                    <span class="badge bg-primary">{{ formatQuestionType(questionForm.get('type')?.value) }}</span>
+                    <span class="badge" [ngClass]="'bg-' + getDifficultyColor(questionForm.get('difficulty')?.value)">
+                      {{ questionForm.get('difficulty')?.value }}
+                    </span>
+                    <span class="badge bg-secondary">{{ questionForm.get('maxMarks')?.value }} marks</span>
+                  </div>
+                  
+                  <div class="preview-text" [innerHTML]="questionForm.get('text')?.value"></div>
+                  
+                  <!-- Media Preview -->
+                  <div *ngIf="questionForm.get('mediaType')?.value !== 'NONE' && (mediaPreview || questionForm.get('mediaPath')?.value)" 
+                       class="media-preview">
+                    <div class="media-container">
+                      <img *ngIf="questionForm.get('mediaType')?.value === 'IMAGE' && (mediaPreview || questionForm.get('mediaPath')?.value)" 
+                           [src]="mediaPreview || questionForm.get('mediaPath')?.value" 
+                           class="preview-media"
+                           [alt]="questionForm.get('mediaCaption')?.value">
+                      <div *ngIf="questionForm.get('mediaType')?.value === 'VIDEO'" class="video-container">
+                        <i class="bi bi-play-btn display-1 text-primary"></i>
+                        <p>Video: {{ questionForm.get('mediaCaption')?.value }}</p>
+                      </div>
+                      <div *ngIf="questionForm.get('mediaType')?.value === 'AUDIO'" class="audio-container">
+                        <i class="bi bi-volume-up display-1 text-primary"></i>
+                        <p>Audio: {{ questionForm.get('mediaCaption')?.value }}</p>
+                      </div>
+                    </div>
+                    <small class="media-caption">{{ questionForm.get('mediaCaption')?.value }}</small>
+                  </div>
+                  
+                  <!-- Options Preview -->
+                  <div *ngIf="mcqOptions.length > 0" class="options-preview">
+                    <div *ngFor="let option of mcqOptions; let i = index" 
+                         class="option-preview"
+                         [class.correct]="isAnswerSelected(option)">
+                      <span class="option-letter">{{ getOptionLetter(i) }}</span>
+                      <span class="option-text">{{ option }}</span>
+                      <i *ngIf="isAnswerSelected(option)" class="bi bi-check-lg text-success ms-2"></i>
+                    </div>
+                  </div>
+                  
+                  <!-- Matching Pairs Preview -->
+                  <div *ngIf="matchingPairs.length > 0" class="matching-preview">
+                    <div *ngFor="let pair of matchingPairs.controls; let i = index" 
+                         class="matching-pair-preview">
+                      <span class="left-item">{{ pair.get('leftText')?.value }}</span>
+                      <i class="bi bi-arrow-right mx-2 text-muted"></i>
+                      <span class="right-item">{{ pair.get('rightText')?.value }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Configuration Summary -->
+              <div class="config-summary">
+                <h6 class="summary-title">Configuration Summary</h6>
+                <div class="summary-grid">
+                  <div class="summary-item">
+                    <span class="label">Type:</span>
+                    <span class="value">{{ formatQuestionType(questionForm.get('type')?.value) }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="label">Difficulty:</span>
+                    <span class="value">{{ questionForm.get('difficulty')?.value }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="label">Category:</span>
+                    <span class="value">{{ questionForm.get('category')?.value || 'Not specified' }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="label">Marks:</span>
+                    <span class="value">{{ questionForm.get('maxMarks')?.value }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="label">Partial Credit:</span>
+                    <span class="value">{{ questionForm.get('allowPartialCredit')?.value ? 'Yes' : 'No' }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="label">Time Limit:</span>
+                    <span class="value">{{ questionForm.get('timeLimitSeconds')?.value ? questionForm.get('timeLimitSeconds')?.value + 's' : 'Not set' }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="label">Media:</span>
+                    <span class="value">{{ questionForm.get('mediaType')?.value !== 'NONE' ? questionForm.get('mediaType')?.value : 'None' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <div class="step-navigation" *ngIf="currentStep > 1">
+            <button type="button" 
+                    class="btn btn-outline-secondary" 
+                    (click)="previousStep()">
+              <i class="bi bi-arrow-left me-2"></i>
+              Previous
+            </button>
+          </div>
+
+          <div class="main-actions">
+            <button type="button" 
+                    class="btn btn-outline-secondary" 
+                    (click)="router.navigate(['/examiner/tests', testId, 'questions'])">
+              <i class="bi bi-x-lg me-2"></i>
+              Cancel
+            </button>
+
+            <button type="button" 
+                    class="btn btn-outline-primary" 
+                    *ngIf="currentStep < totalSteps"
+                    (click)="nextStep()">
+              Next
+              <i class="bi bi-arrow-right ms-2"></i>
+            </button>
+
+            <button type="submit" 
+                    class="btn btn-primary" 
+                    *ngIf="currentStep === totalSteps"
+                    [disabled]="questionForm.invalid || isLoading">
+              <i class="bi" [class.bi-check-lg]="!isLoading" [class.bi-arrow-repeat]="isLoading"></i>
+              {{ isLoading ? 'Saving...' : (isEdit ? 'Update Question' : 'Create Question') }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,201 @@
+<!-- test-analytics.component.html -->
+<div class="analytics-container">
+  <!-- Header Section -->
+<!-- Analytics Header Section -->
+<div class="management-header">
+  <div class="header-content">
+    <div class="header-text">
+      <h1 class="header-title">
+        <i class="bi bi-bar-chart-line me-2"></i>
+        Test Analytics
+      </h1>
+      <p class="header-subtitle" *ngIf="analyticsData">
+        Performance insights for: <strong>{{ analyticsData.test.title }}</strong>
+      </p>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="header-stats">
+      <div class="stat-item">
+        <div class="stat-number">{{ analyticsData?.summary?.totalStudents || 0 }}</div>
+        <div class="stat-label">Total Students</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number text-success">{{ getCompletionRate() || 0 }}%</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number text-warning">{{ analyticsData?.summary?.averageScore || 0 }}%</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number text-info">{{ analyticsData?.summary?.passRate || 0 }}%</div>
+        <div class="stat-label">Pass Rate</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Bar -->
+  <div class="action-bar">
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <!-- Date Range Filter -->
+      <div class="filter-group">
+        <label class="filter-label">Time Range:</label>
+        <select class="form-select form-select-sm" [(ngModel)]="dateRange" (change)="onDateRangeChange()">
+          <option *ngFor="let option of dateRangeOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </div>
+
+      <!-- View Toggle -->
+      <div class="filter-group">
+        <label class="filter-label">View:</label>
+        <div class="status-filter-buttons">
+          <button type="button" 
+                  class="btn btn-filter-status" 
+                  [class.active]="showCharts"
+                  (click)="toggleCharts()">
+            <span class="filter-dot published"></span>
+            Charts
+          </button>
+          
+          <button type="button" 
+                  class="btn btn-filter-status" 
+                  [class.active]="!showCharts"
+                  (click)="toggleCharts()">
+            <span class="filter-dot draft"></span>
+            Tables
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <!-- Refresh Button -->
+      <button class="btn btn-outline-secondary btn-sm" (click)="refreshData()" [disabled]="isRefreshing">
+        <i class="bi" [class.bi-arrow-clockwise]="!isRefreshing" [class.bi-arrow-repeat]="isRefreshing"
+          [class.spin]="isRefreshing"></i>
+        {{ isRefreshing ? 'Refreshing...' : 'Refresh' }}
+      </button>
+
+      <!-- Back Button -->
+      <button class="btn btn-outline-secondary btn-sm" (click)="onBack()">
+        <i class="bi bi-arrow-left me-1"></i>
+        Back
+      </button>
+
+      <!-- Export Button -->
+      <app-analytics-export-button [testId]="testId" [analyticsData]="analyticsData" [filters]="getFilters()"
+        (export)="onExportRequested($event)">
+      </app-analytics-export-button>
+    </div>
+  </div>
+</div>
+
+  <!-- Loading State -->
+  <app-loading-state *ngIf="isLoading && !isRefreshing" message="Loading analytics data...">
+  </app-loading-state>
+
+  <!-- Error State -->
+  <app-error-state *ngIf="errorMessage && !isLoading" [message]="errorMessage" [showRetry]="true" (retry)="retryLoad()"
+    (dismiss)="clearError()">
+  </app-error-state>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle me-2"></i>
+    {{ successMessage }}
+    <button type="button" class="btn-close" (click)="clearSuccess()"></button>
+  </div>
+
+  <!-- Analytics Content -->
+  <main *ngIf="!isLoading && analyticsData" class="analytics-content">
+
+    <!-- Test Overview Card -->
+    <section class="test-overview-card">
+      <div class="overview-header">
+        <h3>Test Overview</h3>
+        <span class="test-id">ID: {{ analyticsData.test.id }}</span>
+      </div>
+      <div class="overview-grid">
+        <div class="overview-item">
+          <span class="overview-label">Duration</span>
+          <span class="overview-value">{{ analyticsData.test.durationMinutes }} min</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-label">Questions</span>
+          <span class="overview-value">{{ analyticsData.test.numberOfQuestions }}</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-label">Total Marks</span>
+          <span class="overview-value">{{ analyticsData.test.totalMarks }}</span>
+        </div>
+        <div class="overview-item">
+          <span class="overview-label">Passing Score</span>
+          <span class="overview-value">{{ analyticsData.test.passingScore }}%</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics -->
+    <section class="metrics-section">
+      <h3 class="section-title">Key Performance Indicators</h3>
+      <div class="metrics-grid">
+        <div class="row">
+          <div class="col-3">
+            <app-analytics-metrics-card [icon]="'bi-people'" [value]="analyticsData.summary.totalStudents"
+              [label]="'Total Students'" [trend]="5" color="primary">
+            </app-analytics-metrics-card>
+          </div>
+          <div class="col-3">
+            <app-analytics-metrics-card [icon]="'bi-check-circle'" [value]="getCompletionRate()" [suffix]="'%'"
+              [label]="'Completion Rate'" [trend]="2.5" color="success">
+            </app-analytics-metrics-card>
+          </div>
+          <div class="col-3">
+            <app-analytics-metrics-card [icon]="'bi-graph-up'" [value]="analyticsData.summary.averageScore"
+              [suffix]="'%'" [label]="'Average Score'" [trend]="1.2" color="warning">
+            </app-analytics-metrics-card>
+          </div>
+          <div class="col-3">
+            <app-analytics-metrics-card [icon]="'bi-trophy'" [value]="analyticsData.summary.passRate" [suffix]="'%'"
+              [label]="'Pass Rate'" [trend]="-0.5" color="info">
+            </app-analytics-metrics-card>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+<!-- Charts Section -->
+<section *ngIf="showCharts" class="charts-section">
+  <h3 class="section-title">Performance Analysis</h3>
+  <div class="charts-grid">
+    <!-- Remove chart-card class since child components handle their own styling -->
+    <app-score-distribution-chart 
+      [scoreDistribution]="analyticsData.scoreDistribution"
+      [totalStudents]="analyticsData.summary.completedStudents">
+    </app-score-distribution-chart>
+
+    <app-time-analysis-chart 
+      [timeAnalysis]="analyticsData.timeAnalysis"
+      [totalStudents]="analyticsData.summary.completedStudents">
+    </app-time-analysis-chart>
+  </div>
+</section>
+
+    <!-- Question Performance -->
+    <section class="table-section">
+      <app-question-performance-table [testId]="testId" [testTitle]="analyticsData.test.title" [dateRange]="dateRange">
+      </app-question-performance-table>
+    </section>
+
+    <!-- Student Performance -->
+    <section class="table-section">
+
+      <app-student-performance-table [testId]="testId" [testTitle]="analyticsData.test.title" [dateRange]="dateRange">
+      </app-student-performance-table>
+     </section>
+  </main>
+</div>

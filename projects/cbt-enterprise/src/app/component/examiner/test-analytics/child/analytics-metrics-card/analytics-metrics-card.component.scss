@@ -1,0 +1,74 @@
+// components/analytics-metrics-card.component.scss
+.metrics-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border-left: 4px solid;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  &__icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+  }
+
+  &__content {
+    flex: 1;
+  }
+
+  &__value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  &__label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+  }
+
+  &__trend {
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    &.trend--positive {
+      color: #198754;
+    }
+
+    &.trend--negative {
+      color: #dc3545;
+    }
+  }
+
+  // Color variants
+  &--primary &__icon { background: linear-gradient(135deg, #007bff, #0056b3); }
+  &--success &__icon { background: linear-gradient(135deg, #198754, #0f5132); }
+  &--warning &__icon { background: linear-gradient(135deg, #ffc107, #fd7e14); }
+  &--info &__icon { background: linear-gradient(135deg, #0dcaf0, #0aa2c0); }
+  &--danger &__icon { background: linear-gradient(135deg, #dc3545, #a71e2a); }
+
+  &--primary { border-left-color: #007bff; }
+  &--success { border-left-color: #198754; }
+  &--warning { border-left-color: #ffc107; }
+  &--info { border-left-color: #0dcaf0; }
+  &--danger { border-left-color: #dc3545; }
+}

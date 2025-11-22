@@ -1,0 +1,492 @@
+<div class="essay-grading-management-container">
+  <!-- Header Section -->
+  <div class="management-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="header-title">
+          <i class="bi bi-pencil-square me-2"></i>
+          Essay Grading
+        </h1>
+        <p class="header-subtitle">Test ID: {{ testId }} - Manual essay grading and feedback</p>
+      </div>
+      
+      <!-- Quick Stats -->
+      <div class="header-stats">
+        <div class="stat-item">
+          <div class="stat-number">{{ stats.totalEssays || 0 }}</div>
+          <div class="stat-label">Total Essays</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-success">{{ stats.gradedEssays || 0 }}</div>
+          <div class="stat-label">Graded</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-warning">{{ stats.ungradedEssays || 0 }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number text-primary">
+            {{ stats.totalEssays > 0 ? (stats.gradedEssays / stats.totalEssays * 100 | number:'1.1-1') : 0 }}%
+          </div>
+          <div class="stat-label">Completion</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <!-- Filter Controls -->
+      <div class="filters-section">
+        <div class="filter-group">
+          <label class="filter-label">Filter Essays:</label>
+          <div class="essay-filter-buttons">
+            <button type="button" 
+                    class="btn btn-filter-essay" 
+                    [class.active]="filter === 'ungraded'"
+                    (click)="setFilter('ungraded')">
+              <span class="filter-dot pending"></span>
+              Pending Grading
+              <span class="filter-count">{{ stats.ungradedEssays || 0 }}</span>
+            </button>
+            
+            <button type="button" 
+                    class="btn btn-filter-essay" 
+                    [class.active]="filter === 'all'"
+                    (click)="setFilter('all')">
+              <span class="filter-dot all"></span>
+              All Essays
+              <span class="filter-count">{{ stats.totalEssays || 0 }}</span>
+            </button>
+            
+            <button type="button" 
+                    class="btn btn-filter-essay" 
+                    [class.active]="filter === 'graded'"
+                    (click)="setFilter('graded')">
+              <span class="filter-dot graded"></span>
+              Graded Only
+              <span class="filter-count">{{ stats.gradedEssays || 0 }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="view-toggle-group">
+          <label class="filter-label">View:</label>
+          <div class="btn-group btn-group-sm">
+            <button type="button" 
+                    class="btn btn-outline-secondary" 
+                    [class.active]="showGroupedView"
+                    (click)="toggleGroupedView()">
+              <i class="bi bi-people me-1"></i>
+              By Student
+            </button>
+            <button type="button" 
+                    class="btn btn-outline-secondary" 
+                    [class.active]="!showGroupedView"
+                    (click)="toggleGroupedView()">
+              <i class="bi bi-list-ul me-1"></i>
+              Individual
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <div class="page-size-selector">
+          <label class="form-label-sm mb-0">Show:</label>
+          <select class="form-select form-select-sm" 
+                  [(ngModel)]="pageSize" 
+                  (change)="onPageSizeChange()">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+
+        <div class="primary-actions">
+          <button class="btn btn-outline-secondary btn-sm" (click)="refreshEssays()">
+            <i class="bi bi-arrow-clockwise me-1"></i>
+            Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="error-container">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <div>
+          <h6 class="alert-heading mb-1">Unable to Load Essays</h6>
+          <p class="mb-0">{{ errorMessage }}</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+    </div>
+  </div>
+
+  <!-- Success State -->
+  <div *ngIf="successMessage" class="success-container">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <div>
+          <h6 class="alert-heading mb-1">Success</h6>
+          <p class="mb-0">{{ successMessage }}</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="loading-text">Loading essays...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && !errorMessage" class="main-content">
+    <!-- Empty State -->
+    <div *ngIf="(showGroupedView ? groupedEssays.length : essays.length) === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-pencil-square"></i>
+      </div>
+      <h3>No Essays Found</h3>
+      <p class="text-muted">
+        {{ filter === 'ungraded' ? 'All essays have been graded!' : 'No essays match your current filter.' }}
+      </p>
+      <div class="empty-actions">
+        <button *ngIf="filter !== 'all'" (click)="setFilter('all')" class="btn btn-outline-primary me-2">
+          View All Essays
+        </button>
+        <button (click)="refreshEssays()" class="btn btn-primary">
+          <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Grading Layout -->
+    <div *ngIf="(showGroupedView ? groupedEssays.length : essays.length) > 0" class="grading-layout row g-3">
+      <!-- Essays Sidebar -->
+      <div class="col-12 col-lg-6">
+        <div class="essays-sidebar">
+          <div class="sidebar-header">
+            <h6 class="sidebar-title">
+              <i class="bi" [class]="showGroupedView ? 'bi-people me-2' : 'bi-list-ul me-2'"></i>
+              {{ showGroupedView ? 'Students' : 'Student Essays' }}
+            </h6>
+            <div class="sidebar-info">
+              {{ showGroupedView ? groupedEssays.length + ' students' : essays.length + ' essays' }}
+            </div>
+          </div>
+
+          <div class="essays-list">
+            <!-- Grouped View -->
+            <div *ngIf="showGroupedView">
+              <div *ngFor="let group of groupedEssays" class="student-group">
+                <div class="group-header" (click)="toggleGroup(group)">
+                  <div class="group-info">
+                    <div class="student-avatar">
+                      {{ group.studentName?.charAt(0) || 'S' }}
+                    </div>
+                    <div class="student-details">
+                      <h5 class="student-name">{{ group.studentName }}</h5>
+                      <p class="student-email">{{ group.studentEmail }}</p>
+                    </div>
+                    <div class="group-stats">
+                      <span class="badge bg-success">{{ group.gradedCount }} graded</span>
+                      <span class="badge bg-warning">{{ group.totalCount - group.gradedCount }} pending</span>
+                      <span class="badge bg-primary">{{ group.totalCount }} total</span>
+                    </div>
+                  </div>
+                  <i class="bi bi-chevron-down toggle-icon" [class.rotated]="group.expanded"></i>
+                </div>
+                
+                <div *ngIf="group.expanded" class="group-essays">
+                  <div *ngFor="let essay of group.essays" 
+                       class="essay-card"
+                       [class.active]="selectedEssay?.sessionId === essay.sessionId && selectedEssay?.questionId === essay.questionId"
+                       (click)="selectEssay(essay)">
+                    <div class="essay-card-header">
+                      <div class="essay-question-preview">
+                        <strong>Question:</strong> {{ essay.questionText | slice:0:80 }}{{ essay.questionText.length > 80 ? '...' : '' }}
+                      </div>
+                      <div class="essay-status" [ngClass]="essay.graded ? 'status-graded' : 'status-pending'">
+                        {{ essay.graded ? 'Graded' : 'Pending' }}
+                      </div>
+                    </div>
+
+                    <div class="essay-preview">
+                      <p class="preview-text">
+                        {{ getPlainText(essay.essayAnswer) | slice:0:120 }}{{ getPlainText(essay.essayAnswer).length > 120 ? '...' : '' }}
+                      </p>
+                    </div>
+
+                    <div class="essay-meta">
+                      <div class="meta-item">
+                        <i class="bi bi-fonts"></i>
+                        <span>{{ getTextLength(essay.essayAnswer) }} chars</span>
+                      </div>
+                      <div class="meta-item" *ngIf="essay.graded">
+                        <i class="bi bi-star-fill"></i>
+                        <span class="score">{{ essay.currentScore }}/{{ essay.maxMarks }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Individual View -->
+            <div *ngIf="!showGroupedView">
+              <div *ngFor="let essay of essays" 
+                   class="essay-card"
+                   [class.active]="selectedEssay?.sessionId === essay.sessionId && selectedEssay?.questionId === essay.questionId"
+                   (click)="selectEssay(essay)">
+                <div class="essay-card-header">
+                  <div class="student-avatar">
+                    {{ essay.studentName?.charAt(0) || 'S' }}
+                  </div>
+                  <div class="student-info">
+                    <h5 class="student-name">{{ essay.studentName || 'Student ' + essay.studentId }}</h5>
+                    <p class="student-email">{{ essay.studentEmail || 'No email' }}</p>
+                  </div>
+                  <div class="essay-status" [ngClass]="essay.graded ? 'status-graded' : 'status-pending'">
+                    {{ essay.graded ? 'Graded' : 'Pending' }}
+                  </div>
+                </div>
+
+                <div class="essay-preview">
+                  <p class="preview-text">
+                    {{ getPlainText(essay.essayAnswer) | slice:0:120 }}{{ getPlainText(essay.essayAnswer).length > 120 ? '...' : '' }}
+                  </p>
+                </div>
+
+                <div class="essay-meta">
+                  <div class="meta-item">
+                    <i class="bi bi-fonts"></i>
+                    <span>{{ getTextLength(essay.essayAnswer) }} chars</span>
+                  </div>
+                  <div class="meta-item" *ngIf="essay.graded">
+                    <i class="bi bi-star-fill"></i>
+                    <span class="score">{{ essay.currentScore }}/{{ essay.maxMarks }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination (Only for individual view) -->
+          <div *ngIf="!showGroupedView && essays.length > 0" class="pagination-section">
+            <div class="pagination-info">
+              Showing <strong>{{ startIndex }}</strong> to <strong>{{ endIndex }}</strong> 
+              of <strong>{{ totalElements }}</strong> essays
+            </div>
+            
+            <nav class="pagination-nav">
+              <ul class="pagination">
+                <!-- First Page -->
+                <li class="page-item" [class.disabled]="currentPage === 0">
+                  <a class="page-link" (click)="onPageChange(0)" aria-label="First">
+                    <i class="bi bi-chevron-double-left"></i>
+                  </a>
+                </li>
+                
+                <!-- Previous Page -->
+                <li class="page-item" [class.disabled]="currentPage === 0">
+                  <a class="page-link" (click)="onPageChange(currentPage - 1)" aria-label="Previous">
+                    <i class="bi bi-chevron-left"></i>
+                  </a>
+                </li>
+
+                <!-- Page Numbers -->
+                <li *ngFor="let page of getVisiblePages()" 
+                    class="page-item" 
+                    [class.active]="page === currentPage">
+                  <a class="page-link" (click)="onPageChange(page)">
+                    {{ page + 1 }}
+                  </a>
+                </li>
+
+                <!-- Next Page -->
+                <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                  <a class="page-link" (click)="onPageChange(currentPage + 1)" aria-label="Next">
+                    <i class="bi bi-chevron-right"></i>
+                  </a>
+                </li>
+                
+                <!-- Last Page -->
+                <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                  <a class="page-link" (click)="onPageChange(totalPages - 1)" aria-label="Last">
+                    <i class="bi bi-chevron-double-right"></i>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grading Panel -->
+      <div class="col-12 col-lg-6">
+        <div class="grading-panel">
+          <div *ngIf="selectedEssay; else noSelection" class="grading-content">
+            <!-- Compact Panel Header -->
+            <div class="panel-header">
+              <div class="panel-title">
+                <i class="bi bi-pencil me-2"></i>
+                <h5 class="mb-0">Grading Panel</h5>
+              </div>
+              <div class="panel-actions">
+                <span class="exam-status badge" [ngClass]="selectedEssayGradingStatus?.allEssaysGraded ? 'bg-success' : 'bg-warning'">
+                  <i class="bi" [class]="selectedEssayGradingStatus?.allEssaysGraded ? 'bi-check-circle-fill' : 'bi-clock-history'"></i>
+                  {{ selectedEssayGradingStatus?.allEssaysGraded ? 'All Graded' : 'Pending' }}
+                </span>
+                <button class="btn btn-sm btn-outline-secondary" (click)="clearSelection()">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Compact Student Info -->
+            <div class="student-section">
+              <div class="student-card">
+                <div class="student-avatar-medium">
+                  {{ selectedEssay.studentName?.charAt(0) || 'S' }}
+                </div>
+                <div class="student-details">
+                  <h6 class="student-name mb-1">{{ selectedEssay.studentName || 'Student ' + selectedEssay.studentId }}</h6>
+                  <small class="student-email text-muted d-block">{{ selectedEssay.studentEmail || 'No email' }}</small>
+                  <div class="student-meta mt-2">
+                    <small class="meta-item me-3">
+                      <i class="bi bi-person-badge me-1"></i>
+                      ID: {{ selectedEssay.studentId }}
+                    </small>
+                    <small class="meta-item" *ngIf="selectedEssayGradingStatus">
+                      <i class="bi bi-graph-up me-1"></i>
+                      Score: {{ selectedEssayGradingStatus.totalScore || 0 }}
+                    </small>
+                  </div>
+                </div>
+                <div class="grading-status" [ngClass]="selectedEssay.graded ? 'status-graded' : 'status-pending'">
+                  <span class="status-dot"></span>
+                  {{ selectedEssay.graded ? 'Graded' : 'Pending' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Question Section - PRESERVED SIZE -->
+            <div class="content-section">
+              <div class="section-header">
+                <h6>Question</h6>
+              </div>
+              <div class="question-content">
+                <div class="question-card">
+                  <p class="question-text mb-2">{{ selectedEssay.questionText }}</p>
+                  <div class="question-meta">
+                    <span class="max-score badge bg-light text-dark">Max: {{ selectedEssay.maxMarks }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Answer Section - PRESERVED SIZE -->
+            <div class="content-section">
+              <div class="section-header">
+                <h6>Student's Answer</h6>
+                <div class="answer-stats">
+                  <small class="text-muted">
+                    <i class="bi bi-fonts me-1"></i>
+                    {{ getTextLength(selectedEssay.essayAnswer) }} chars
+                  </small>
+                </div>
+              </div>
+              <div class="answer-content">
+                <div class="answer-card">
+                  <app-essay-viewer [content]="selectedEssay.essayAnswer || ''"></app-essay-viewer>
+                </div>
+              </div>
+            </div>
+
+            <!-- Compact Grading Form -->
+            <div class="grading-form-section">
+              <div class="section-header">
+                <h6>Evaluation</h6>
+                <small class="text-muted" *ngIf="selectedEssay.graded">
+                  Current: <strong>{{ selectedEssay.currentScore }}/{{ selectedEssay.maxMarks }}</strong>
+                </small>
+              </div>
+
+              <div class="grading-form">
+                <!-- Compact Score Input -->
+                <div class="form-group mb-3">
+                  <label class="form-label small fw-bold">Score</label>
+                  <div class="score-input-container">
+                    <div class="score-input-group">
+                      <input type="number" 
+                             class="form-control form-control-sm score-input" 
+                             [(ngModel)]="currentScore" 
+                             [min]="0"
+                             [max]="selectedEssay.maxMarks" 
+                             step="0.5"
+                             placeholder="0.0">
+                      <span class="score-divider">/</span>
+                      <span class="max-score-display">{{ selectedEssay.maxMarks }}</span>
+                    </div>
+                    <small class="text-muted" *ngIf="currentScore > 0">
+                      {{ (currentScore / selectedEssay.maxMarks * 100) | number:'1.1-1' }}%
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Compact Feedback -->
+                <div class="form-group mb-3">
+                  <label class="form-label small fw-bold">
+                    Feedback
+                    <span class="text-muted">(Optional)</span>
+                  </label>
+                  <textarea class="form-control form-control-sm feedback-textarea" 
+                            rows="3" 
+                            [(ngModel)]="feedback"
+                            placeholder="Provide constructive feedback..."></textarea>
+                </div>
+
+                <!-- Compact Action Buttons -->
+                <div class="action-buttons">
+                  <button class="btn btn-sm btn-outline-secondary" (click)="clearSelection()">
+                    Cancel
+                  </button>
+                  <button class="btn btn-sm btn-primary" 
+                          (click)="submitGrade()"
+                          [disabled]="isLoading || currentScore < 0 || currentScore > selectedEssay.maxMarks">
+                    <i class="bi bi-check-lg me-1"></i>
+                    {{ isLoading ? 'Grading...' : (selectedEssay.graded ? 'Update' : 'Submit') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noSelection>
+            <div class="no-selection-state">
+              <div class="empty-illustration">
+                <i class="bi bi-pencil-square"></i>
+              </div>
+              <h3>Select an Essay to Grade</h3>
+              <p>Choose an essay from the list to begin grading and providing feedback to students.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

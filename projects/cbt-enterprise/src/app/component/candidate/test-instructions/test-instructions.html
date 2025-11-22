@@ -1,0 +1,231 @@
+<!-- 
+  TEST INSTRUCTIONS MODAL TEMPLATE
+  ================================
+
+  Purpose: Displays exam instructions in a modal dialog with loading states,
+  error handling, and user acknowledgment functionality.
+
+  Features:
+  - Responsive modal design with Bootstrap classes
+  - Loading state with spinner animation
+  - Error message display
+  - Dynamic exam information display
+  - Numbered instructions list
+  - User acknowledgment checkbox
+  - Action buttons with proper state management
+
+  Accessibility: Includes ARIA attributes and proper semantic structure
+  for screen reader compatibility.
+-->
+
+<!-- 
+  MODAL CONTAINER
+  ---------------
+  Controlled by showModal input property with conditional display logic
+-->
+<div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1"
+  role="dialog" aria-labelledby="instructionsModalLabel" aria-hidden="true">
+
+  <!-- 
+    MODAL DIALOG 
+    ------------
+    Large, centered, and scrollable for optimal content display
+  -->
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+
+    <!-- MODAL CONTENT -->
+    <div class="modal-content">
+
+      <!-- 
+        MODAL HEADER 
+        ------------
+        Contains title and close button with primary color scheme
+      -->
+      <div class="modal-header bg-primary text-white">
+
+        <!-- 
+          MODAL TITLE 
+          -----------
+          Includes informative icon for visual context
+        -->
+        <h5 class="modal-title" id="instructionsModalLabel">
+          <i class="bi bi-info-circle me-2"></i>Exam Instructions
+        </h5>
+
+        <!-- 
+          CLOSE BUTTON 
+          ------------
+          Triggers closeModal() method with accessible label
+        -->
+        <button type="button" class="btn-close btn-close-white" (click)="closeModal()" aria-label="Close"></button>
+      </div>
+
+      <!-- 
+        MODAL BODY 
+        ----------
+        Dynamic content area with three possible states:
+        1. Loading state
+        2. Error state  
+        3. Content state
+      -->
+      <div class="modal-body">
+
+        <!-- 
+          LOADING STATE 
+          -------------
+          Displayed during API fetch operations with spinner animation
+        -->
+        <div *ngIf="isLoading" class="text-center py-4">
+
+          <!-- Spinner animation for visual feedback -->
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+
+          <!-- Loading text for visual users -->
+          <p class="mt-2">Loading instructions...</p>
+        </div>
+
+
+        <!-- 
+          ERROR STATE 
+          -----------
+          Displayed when API operations fail with alert styling
+        -->
+        <div *ngIf="!isLoading && errorMessage" class="alert alert-danger">
+
+          <!-- Error icon for visual context -->
+          <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+
+          <!-- Dynamic error message from component -->
+          {{ errorMessage }}
+        </div>
+
+
+
+        <!-- 
+          CONTENT STATE 
+          -------------
+          Displayed when instructions are successfully loaded from API
+        -->
+        <div *ngIf="!isLoading && instructions" class="instructions-content">
+
+          <!-- 
+            EXAM INFORMATION SECTION 
+            ------------------------
+            Displays exam metadata in a visually distinct container
+          -->
+          <div class="exam-info mb-4 p-3 bg-light rounded">
+
+            <!-- Exam name as primary heading -->
+            <h4 class="text-primary">{{ instructions.examName }}</h4>
+            <div class="row mt-3">
+              <div class="col-md-6">
+                <p><strong>Duration:</strong> {{ instructions.durationMinutes }} minutes</p>
+                <p><strong>Total Questions:</strong> {{ instructions.totalQuestions }}</p>
+              </div>
+              <div class="col-md-6">
+                <p><strong>Passing Score:</strong> {{ instructions.passingScore }}%</p>
+                <p><strong>Question Shuffling:</strong> {{ instructions.shuffleQuestions ? 'Enabled' : 'Disabled' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 
+            INSTRUCTIONS LIST SECTION 
+            -------------------------
+            Numbered list of exam instructions with visual hierarchy
+          -->
+          <h5 class="mb-3">Important Instructions:</h5>
+          <div class="instructions-list">
+
+            <!-- 
+              INDIVIDUAL INSTRUCTION ITEMS 
+              ----------------------------
+              Dynamically generated from instructions array
+            -->
+            <div *ngFor="let instruction of instructions.instructions; let i = index"
+              class="instruction-item mb-3 p-2 border-start border-3 border-primary">
+              <div class="d-flex align-items-start">
+
+                <!-- Number badge for visual numbering -->
+                <span class="badge bg-primary me-2 mt-1">{{ i + 1 }}</span>
+
+                <!-- Instruction text content -->
+                <p class="mb-0">{{ instruction }}</p>
+              </div>
+            </div>
+          </div>
+
+
+
+          <!-- 
+            ACKNOWLEDGMENT SECTION 
+            ----------------------
+            Requires user confirmation before proceeding
+          -->
+          <div class="form-check mt-4 mb-3">
+
+            <!-- 
+              ACKNOWLEDGMENT CHECKBOX 
+              -----------------------
+              Bound to hasReadInstructions property with change handler
+            -->
+            <input class="form-check-input" type="checkbox" id="agreeCheckbox" [checked]="hasReadInstructions"
+              (change)="onCheckboxChange($event)">
+
+            <!-- Checkbox label with strong visual weight -->
+            <label class="form-check-label fw-bold" for="agreeCheckbox">
+              I have read and understood all the instructions
+            </label>
+
+            <!-- Help text for additional context -->
+            <div id="acknowledgmentHelp" class="form-text">
+              You must acknowledge reading the instructions before starting the exam.
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- 
+        MODAL FOOTER 
+        ------------
+        Contains action buttons with state-dependent disabling
+      -->
+      <div class="modal-footer">
+
+        <!-- 
+          CLOSE BUTTON 
+          ------------
+          Secondary action - dismisses modal without acknowledgment
+        -->
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">
+          Close
+        </button>
+
+        <!-- 
+          CONFIRM BUTTON 
+          ---------------
+          Primary action - submits acknowledgment to backend
+        -->
+        <button type="button" class="btn btn-primary" (click)="acknowledgeInstructions()"
+          [disabled]="!hasReadInstructions || isLoading">
+
+          <!-- Loading indicator during API operations -->
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+          Confirm and Continue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- 
+  MODAL BACKDROP 
+  --------------
+  Clicking outside the modal content area closes the modal
+-->
+<div *ngIf="showModal" class="modal-backdrop fade show" (click)="closeModal()"></div>
